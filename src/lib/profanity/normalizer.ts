@@ -1,27 +1,19 @@
 /**
  * Text normalizer for profanity detection
- * Handles leet speak, Turkish characters, and obfuscation attempts
+ * Handles Turkish character folding and limited obfuscation patterns.
+ * Intentionally conservative to avoid false positives on normal names.
  */
 
-// Leet speak character mappings
-const leetMap: Record<string, string> = {
+// Limited leet speak mappings (keep narrow to reduce overblocking)
+const limitedLeetMap: Record<string, string> = {
   "@": "a",
   "4": "a",
-  "^": "a",
   "3": "e",
-  "€": "e",
   "1": "i",
   "!": "i",
-  "|": "i",
   "0": "o",
   "5": "s",
   "$": "s",
-  "7": "t",
-  "+": "t",
-  "8": "b",
-  "9": "g",
-  "6": "g",
-  "2": "z",
 };
 
 // Turkish character normalization
@@ -40,8 +32,77 @@ const turkishMap: Record<string, string> = {
   Ç: "c",
 };
 
-// Characters to strip (separators used to obfuscate)
-const stripChars = /[.\-_*#~`'"\/\\,;:!?\s]/g;
+// Token matcher: words + a few obfuscation separators
+const tokenPattern = /[\p{L}\p{N}@!$%*+_.-]+/gu;
+const stripTokenSeparators = /[._-]+/g;
+const nonWordChars = /[^\p{L}\p{N}]+/gu;
+
+export interface TokenSpan {
+  raw: string;
+  start: number;
+  end: number;
+  normalized: string;
+  collapsed: string;
+}
+
+function applyTurkishNormalization(value: string): string {
+  let normalized = value;
+  for (const [char, replacement] of Object.entries(turkishMap)) {
+    normalized = normalized.replaceAll(char, replacement);
+  }
+  return normalized;
+}
+
+function applyLimitedLeetNormalization(value: string): string {
+  let normalized = value;
+  for (const [char, replacement] of Object.entries(limitedLeetMap)) {
+    normalized = normalized.replaceAll(char, replacement);
+  }
+  return normalized;
+}
+
+export function collapseRepeatedChars(value: string): string {
+  return value.replace(/(.)\1+/g, "$1");
+}
+
+/**
+ * Normalize a single token for dictionary comparison.
+ */
+export function normalizeToken(token: string): string {
+  let normalized = token.toLowerCase();
+  normalized = applyTurkishNormalization(normalized);
+  normalized = normalized.replace(stripTokenSeparators, "");
+  normalized = applyLimitedLeetNormalization(normalized);
+  normalized = normalized.replace(nonWordChars, "");
+  return normalized;
+}
+
+/**
+ * Tokenize input while preserving index positions for masking.
+ */
+export function tokenizeText(text: string): TokenSpan[] {
+  const spans: TokenSpan[] = [];
+
+  for (const match of text.matchAll(tokenPattern)) {
+    const raw = match[0];
+    const start = match.index ?? 0;
+    const normalized = normalizeToken(raw);
+
+    if (!normalized) {
+      continue;
+    }
+
+    spans.push({
+      raw,
+      start,
+      end: start + raw.length,
+      normalized,
+      collapsed: collapseRepeatedChars(normalized),
+    });
+  }
+
+  return spans;
+}
 
 /**
  * Normalize text for profanity checking
@@ -49,25 +110,9 @@ const stripChars = /[.\-_*#~`'"\/\\,;:!?\s]/g;
  * @returns Normalized text ready for comparison
  */
 export function normalizeText(text: string): string {
-  let normalized = text.toLowerCase();
-
-  // Apply Turkish character normalization
-  for (const [char, replacement] of Object.entries(turkishMap)) {
-    normalized = normalized.replaceAll(char, replacement);
-  }
-
-  // Apply leet speak normalization
-  for (const [char, replacement] of Object.entries(leetMap)) {
-    normalized = normalized.replaceAll(char, replacement);
-  }
-
-  // Remove separator characters (used to obfuscate like f.u.c.k)
-  normalized = normalized.replace(stripChars, "");
-
-  // Collapse repeated characters (fuuuuck -> fuck)
-  normalized = normalized.replace(/(.)\1{2,}/g, "$1$1");
-
-  return normalized;
+  return tokenizeText(text)
+    .map((token) => token.normalized)
+    .join(" ");
 }
 
 /**
@@ -77,13 +122,11 @@ export function normalizeText(text: string): string {
  * @returns Array of word variations
  */
 export function generateVariations(word: string): string[] {
-  const variations: string[] = [word];
-
-  // Add single-letter version (removes ALL duplicates)
-  const singleLetters = word.replace(/(.)\1+/g, "$1");
-  if (singleLetters !== word) {
-    variations.push(singleLetters);
+  const normalized = normalizeToken(word);
+  if (!normalized) {
+    return [];
   }
 
-  return variations;
+  const collapsed = collapseRepeatedChars(normalized);
+  return collapsed !== normalized ? [normalized, collapsed] : [normalized];
 }

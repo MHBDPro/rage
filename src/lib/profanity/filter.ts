@@ -1,14 +1,49 @@
 /**
  * Profanity filter implementation
- * Checks text against wordlists with normalization
+ * Conservative profanity detection:
+ * - Full-token matching only (no broad substring matching)
+ * - Limited obfuscation support (f.u.c.k / ş!k / repeated letters)
  */
 
-import { normalizeText, generateVariations } from "./normalizer";
+import {
+  normalizeToken,
+  collapseRepeatedChars,
+  tokenizeText,
+  type TokenSpan,
+} from "./normalizer";
 import { profanitySet } from "./wordlists";
 
 export interface ProfanityResult {
   hasProfanity: boolean;
   detectedWords: string[];
+}
+
+const canonicalByNormalized = new Map<string, string>();
+const canonicalByCollapsed = new Map<string, string>();
+
+for (const rawWord of profanitySet) {
+  const normalized = normalizeToken(rawWord);
+  if (!normalized) {
+    continue;
+  }
+
+  if (!canonicalByNormalized.has(normalized)) {
+    canonicalByNormalized.set(normalized, rawWord);
+  }
+
+  const collapsed = collapseRepeatedChars(normalized);
+  if (!canonicalByCollapsed.has(collapsed)) {
+    canonicalByCollapsed.set(collapsed, rawWord);
+  }
+}
+
+function resolveMatchedWord(token: TokenSpan): string | null {
+  const direct = canonicalByNormalized.get(token.normalized);
+  if (direct) {
+    return direct;
+  }
+
+  return canonicalByCollapsed.get(token.collapsed) ?? null;
 }
 
 /**
@@ -26,42 +61,19 @@ export function containsProfanity(text: string): boolean {
  * @returns Object with detection result and matched words
  */
 export function checkProfanity(text: string): ProfanityResult {
-  const normalized = normalizeText(text);
-  const detectedWords: string[] = [];
+  const detectedWords = new Set<string>();
+  const tokens = tokenizeText(text);
 
-  // Check for exact matches in the wordlist
-  for (const word of profanitySet) {
-    // Generate variations of the profanity word
-    const variations = generateVariations(word);
-
-    for (const variant of variations) {
-      // Check if the normalized text contains this word
-      if (normalized.includes(variant)) {
-        detectedWords.push(word);
-        break; // No need to check other variations of the same word
-      }
-    }
-  }
-
-  // Also check if the entire normalized text matches any word
-  if (profanitySet.has(normalized) && !detectedWords.includes(normalized)) {
-    detectedWords.push(normalized);
-  }
-
-  // Check with single-letter collapse (catches "fuuuck" etc.)
-  const collapsed = normalized.replace(/(.)\1+/g, "$1");
-  if (collapsed !== normalized) {
-    for (const word of profanitySet) {
-      const wordCollapsed = word.replace(/(.)\1+/g, "$1");
-      if (collapsed.includes(wordCollapsed) && !detectedWords.includes(word)) {
-        detectedWords.push(word);
-      }
+  for (const token of tokens) {
+    const matchedWord = resolveMatchedWord(token);
+    if (matchedWord) {
+      detectedWords.add(matchedWord);
     }
   }
 
   return {
-    hasProfanity: detectedWords.length > 0,
-    detectedWords: [...new Set(detectedWords)], // Remove duplicates
+    hasProfanity: detectedWords.size > 0,
+    detectedWords: [...detectedWords],
   };
 }
 
@@ -71,21 +83,24 @@ export function checkProfanity(text: string): ProfanityResult {
  * @returns Text with profanity masked
  */
 export function maskProfanity(text: string): string {
-  let result = text;
-  const { detectedWords } = checkProfanity(text);
-
-  for (const word of detectedWords) {
-    // Create a regex that matches the word case-insensitively
-    const regex = new RegExp(escapeRegex(word), "gi");
-    result = result.replace(regex, "*".repeat(word.length));
+  const tokens = tokenizeText(text);
+  if (tokens.length === 0) {
+    return text;
   }
 
-  return result;
-}
+  let result = "";
+  let cursor = 0;
 
-/**
- * Escape special regex characters
- */
-function escapeRegex(string: string): string {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  for (const token of tokens) {
+    result += text.slice(cursor, token.start);
+    if (resolveMatchedWord(token)) {
+      result += "*".repeat(token.raw.length);
+    } else {
+      result += token.raw;
+    }
+    cursor = token.end;
+  }
+
+  result += text.slice(cursor);
+  return result;
 }
