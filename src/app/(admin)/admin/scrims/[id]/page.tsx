@@ -38,7 +38,6 @@ import {
   setChampion,
 } from "@/lib/actions/admin";
 import type { ScrimSession, Slot } from "@/lib/db/schema";
-import { siteConfig } from "@/config/site";
 
 function SubmitButton({ children }: { children: React.ReactNode }) {
   const { pending } = useFormStatus();
@@ -50,9 +49,9 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
 }
 
 const statusBadge = {
-  active: { variant: "success" as const, label: siteConfig.ui.landing.statusActive },
-  closed: { variant: "warning" as const, label: siteConfig.ui.landing.statusClosed },
-  completed: { variant: "secondary" as const, label: siteConfig.ui.landing.statusCompleted },
+  active: { variant: "success" as const, label: "Canlı" },
+  closed: { variant: "warning" as const, label: "Yaklaşan" },
+  completed: { variant: "secondary" as const, label: "Bitti" },
 };
 
 export default function ScrimSessionDetailPage() {
@@ -129,8 +128,8 @@ export default function ScrimSessionDetailPage() {
   };
 
   const handleChampion = async (formData: FormData) => {
-    const team = (formData.get("championTeam") as string) || "";
-    const result = await setChampion(sessionId, team);
+    const player = (formData.get("championTeam") as string) || "";
+    const result = await setChampion(sessionId, player);
     if (result.success) {
       toast.success(result.message);
       loadData();
@@ -145,7 +144,7 @@ export default function ScrimSessionDetailPage() {
     return map;
   }, [slots]);
 
-  const totalSlots = siteConfig.platform.totalSlots;
+  const totalSlots = session?.maxSlots ?? 32;
   const lockedCount = slots.filter((slot) => slot.isLocked).length;
   const filledCount = slots.filter((slot) => !slot.isLocked).length;
   const availableCount = totalSlots - lockedCount - filledCount;
@@ -169,9 +168,8 @@ export default function ScrimSessionDetailPage() {
       <div className="min-h-screen py-8">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <Card variant="glass" className="p-8 text-center">
-            <p className="text-muted-foreground">Scrim oturumu bulunamadı.</p>
-            <Button className="mt-4" onClick={() => router.push("/admin/scrims")}
-            >
+            <p className="text-muted-foreground">Turnuva oturumu bulunamadı.</p>
+            <Button className="mt-4" onClick={() => router.push("/admin/scrims")}>
               Oturumlara Dön
             </Button>
           </Card>
@@ -191,7 +189,6 @@ export default function ScrimSessionDetailPage() {
   return (
     <div className="min-h-screen py-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <Link href="/admin/scrims" className="inline-flex items-center gap-2 text-sm text-muted-foreground">
@@ -222,19 +219,16 @@ export default function ScrimSessionDetailPage() {
           </div>
           <Button onClick={() => setAddModalOpen(true)} disabled={availableSlots.length === 0}>
             <Plus className="mr-2 h-4 w-4" />
-            Takım Ekle
+            Oyuncu Ekle
           </Button>
         </div>
 
-        {/* Stats */}
         <div className="mb-6 grid gap-4 sm:grid-cols-3">
           <Card variant="default">
             <CardContent className="flex items-center justify-between pt-6">
               <div>
-                <p className="text-sm text-muted-foreground">Toplam</p>
-                <p className="text-2xl font-bold font-[family-name:var(--font-rajdhani)]">
-                  {totalSlots}
-                </p>
+                <p className="text-sm text-muted-foreground">Toplam Kontenjan</p>
+                <p className="text-2xl font-bold font-[family-name:var(--font-rajdhani)]">{totalSlots}</p>
               </div>
               <Users className="h-6 w-6 text-primary/50" />
             </CardContent>
@@ -263,33 +257,31 @@ export default function ScrimSessionDetailPage() {
           </Card>
         </div>
 
-        {/* Champion */}
         <Card variant="glass" className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Crown className="h-5 w-5 text-yellow-400" />
-              Şampiyon Güncelle
+              Lider Oyuncu Güncelle
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form action={handleChampion} className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <Input
                 name="championTeam"
-                placeholder="Şampiyon takım adı"
+                placeholder="Lider oyuncu adı"
                 value={championName}
                 onChange={(e) => setChampionName(e.target.value)}
               />
-              <SubmitButton>Şampiyonu Kaydet</SubmitButton>
+              <SubmitButton>Lideri Kaydet</SubmitButton>
             </form>
           </CardContent>
         </Card>
 
-        {/* Slot Grid */}
         <Card variant="glass">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-primary" />
-              Slot Yönetimi
+              Kontenjan Yönetimi
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -316,17 +308,11 @@ export default function ScrimSessionDetailPage() {
                       {isLocked
                         ? "Kilitli"
                         : slot
-                        ? slot.teamName
+                        ? slot.playerName || slot.teamName
                         : "Boş"}
                     </div>
-                    {slot?.playerNames?.length ? (
-                      <div className="mt-2 grid grid-cols-2 gap-1 text-[10px] text-muted-foreground/80">
-                        {slot.playerNames.map((name, idx) => (
-                          <span key={`${slot.id}-player-${idx}`} className="truncate">
-                            {name}
-                          </span>
-                        ))}
-                      </div>
+                    {slot?.teamSelection ? (
+                      <div className="mt-1 text-[10px] text-muted-foreground/80">{slot.teamSelection}</div>
                     ) : null}
                     <div className="mt-3 flex items-center justify-center gap-2">
                       {isLocked ? (
@@ -351,16 +337,15 @@ export default function ScrimSessionDetailPage() {
         </Card>
       </div>
 
-      {/* Add Team Modal */}
       <Modal isOpen={addModalOpen} onClose={() => setAddModalOpen(false)}>
         <ModalHeader>
-          <ModalTitle>Manuel Takım Ekle</ModalTitle>
-          <ModalDescription>Müsait bir slota takım ekleyin</ModalDescription>
+          <ModalTitle>Manuel Oyuncu Ekle</ModalTitle>
+          <ModalDescription>Müsait bir kontenjana oyuncu ekleyin.</ModalDescription>
         </ModalHeader>
         <form action={handleAddSubmit}>
           <ModalBody className="space-y-4">
             <div>
-              <label className="mb-2 block text-sm font-medium">Slot Numarası</label>
+              <label className="mb-2 block text-sm font-medium">Kontenjan Numarası</label>
               <select
                 value={selectedSlot}
                 onChange={(e) => setSelectedSlot(Number(e.target.value))}
@@ -368,29 +353,20 @@ export default function ScrimSessionDetailPage() {
               >
                 {availableSlots.map((num) => (
                   <option key={num} value={num}>
-                    Slot #{num}
+                    Kontenjan #{num}
                   </option>
                 ))}
               </select>
             </div>
-            <Input name="teamName" placeholder="Takım adını girin" required />
-            <div className="grid gap-3 sm:grid-cols-2">
-              {[1, 2, 3, 4].map((index) => (
-                <Input
-                  key={`player-${index}`}
-                  name={`playerName${index}`}
-                  placeholder={`Oyuncu ${index} adı`}
-                  required
-                />
-              ))}
-            </div>
-            <Input name="instagram" placeholder="@kullaniciadi" required />
+            <Input name="playerName" placeholder="Oyuncu adı" required />
+            <Input name="psnId" placeholder="PSN / Konami ID" required />
+            <Input name="teamSelection" placeholder="Seçilen takım (Örn: Real Madrid)" required />
           </ModalBody>
           <ModalFooter>
             <Button type="button" variant="outline" onClick={() => setAddModalOpen(false)}>
               İptal
             </Button>
-            <SubmitButton>Takım Ekle</SubmitButton>
+            <SubmitButton>Oyuncu Ekle</SubmitButton>
           </ModalFooter>
         </form>
       </Modal>

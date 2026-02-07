@@ -219,6 +219,12 @@ export interface UIStrings {
   forms: {
     teamName: string;
     teamNamePlaceholder: string;
+    playerName: string;
+    playerNamePlaceholder: string;
+    psnId: string;
+    psnIdPlaceholder: string;
+    teamSelection: string;
+    teamSelectionPlaceholder: string;
     player1: string;
     player2: string;
     player3: string;
@@ -257,6 +263,9 @@ export interface UIStrings {
     sessionStartsAt: string;
     sessionModeLabel: string;
     sessionMapLabel: string;
+    fastCupTitle: string;
+    fastCupSubtitle: string;
+    fastCupAction: string;
     statusActive: string;
     statusClosed: string;
     statusCompleted: string;

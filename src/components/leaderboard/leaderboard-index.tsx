@@ -43,9 +43,43 @@ const statusStyles = {
 export function LeaderboardIndex({ boards }: LeaderboardIndexProps) {
   const activeBoards = boards.filter((board) => board.status === "active");
   const archivedBoards = boards.filter((board) => board.status === "archived");
+  const featuredLeagues = boards.filter((board) =>
+    ["ucl", "uel", "ukl"].includes(board.slug)
+  );
 
   return (
     <div className="space-y-10">
+      {featuredLeagues.length > 0 && (
+        <section>
+          <div className="mb-6 border-b border-border/40 pb-4">
+            <h2 className="text-2xl font-bold font-[family-name:var(--font-rajdhani)] uppercase text-foreground">
+              <span className="mr-2 text-primary">{"//"}</span>
+              Resmi Ligler
+            </h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {featuredLeagues.map((board) => (
+              <Link key={board.id} href={`/leaderboard/${board.slug}`}>
+                <Card
+                  variant="glass"
+                  className="border border-white/10 p-5 transition hover:-translate-y-1 hover:border-primary/40"
+                >
+                  <p className="text-xs uppercase tracking-[0.24em] text-white/50">
+                    {board.slug.toUpperCase()}
+                  </p>
+                  <h3 className="mt-3 text-2xl font-bold font-[family-name:var(--font-rajdhani)] uppercase text-white">
+                    {board.title}
+                  </h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {board.entryCount} {siteConfig.ui.leaderboard.entriesLabel}
+                  </p>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       {activeBoards.length > 0 && (
         <section>
           <div className="mb-6 flex items-end justify-between border-b border-border/40 pb-4">

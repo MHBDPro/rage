@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useFormStatus } from "react-dom";
 import { useSearchParams } from "next/navigation";
-import { Plus, Save, Trash2, CalendarClock, ToggleLeft } from "lucide-react";
+import { Plus, Save, Trash2, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,21 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
       {children}
     </Button>
   );
+}
+
+function tournamentTypeLabel(type: string) {
+  switch (type) {
+    case "ucl":
+      return "UCL";
+    case "uel":
+      return "UEL";
+    case "ukl":
+      return "UKL";
+    case "fast_cup":
+      return "Fast Cup";
+    default:
+      return "Özel";
+  }
 }
 
 export default function DailyScrimTemplatesPage() {
@@ -110,11 +125,9 @@ export default function DailyScrimTemplatesPage() {
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold font-[family-name:var(--font-rajdhani)] uppercase tracking-wider">
-              Günlük Scrim Şablonları
+              Günlük Turnuva Şablonları
             </h1>
-            <p className="text-muted-foreground">
-              Sabah / akşam gibi günlük oturumları yönetin
-            </p>
+            <p className="text-muted-foreground">Fast Cup ve lig oturumları için şablonları yönetin.</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleRunNow}>
@@ -133,9 +146,7 @@ export default function DailyScrimTemplatesPage() {
               <CalendarClock className="h-5 w-5 text-primary" />
               Şablon Listesi
             </CardTitle>
-            <CardDescription>
-              {"00:00'da"} aktif olan tüm şablonlar otomatik oluşturulur.
-            </CardDescription>
+            <CardDescription>{"00:00'da"} aktif şablonlar otomatik olarak oturuma dönüştürülür.</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -145,29 +156,18 @@ export default function DailyScrimTemplatesPage() {
                 ))}
               </div>
             ) : templates.length === 0 ? (
-              <p className="py-8 text-center text-muted-foreground">
-                Henüz günlük şablon yok
-              </p>
+              <p className="py-8 text-center text-muted-foreground">Henüz günlük şablon yok.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">
-                        Şablon
-                      </th>
-                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">
-                        Saat
-                      </th>
-                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">
-                        Mod / Harita
-                      </th>
-                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">
-                        Durum
-                      </th>
-                      <th className="pb-3 text-right text-xs font-semibold uppercase text-muted-foreground">
-                        İşlemler
-                      </th>
+                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">Şablon</th>
+                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">Saat</th>
+                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">Lig / Format</th>
+                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">Kontenjan</th>
+                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">Durum</th>
+                      <th className="pb-3 text-right text-xs font-semibold uppercase text-muted-foreground">İşlemler</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -179,16 +179,18 @@ export default function DailyScrimTemplatesPage() {
                             <span className="text-xs text-muted-foreground">{template.slugSuffix}</span>
                           </div>
                         </td>
+                        <td className="py-3 text-sm text-muted-foreground">{template.startTime}</td>
                         <td className="py-3 text-sm text-muted-foreground">
-                          {template.startTime}
+                          {tournamentTypeLabel(template.tournamentType)} • {template.mode} • {template.mapName}
                         </td>
-                        <td className="py-3 text-sm text-muted-foreground">
-                          {template.mode} • {template.mapName}
-                        </td>
+                        <td className="py-3 text-sm text-muted-foreground">{template.maxSlots}</td>
                         <td className="py-3">
-                          <Badge variant={template.isEnabled ? "success" : "secondary"}>
-                            {template.isEnabled ? "Aktif" : "Pasif"}
-                          </Badge>
+                          <div className="flex gap-2">
+                            <Badge variant={template.isEnabled ? "success" : "secondary"}>
+                              {template.isEnabled ? "Aktif" : "Pasif"}
+                            </Badge>
+                            {template.isFastCup && <Badge variant="warning">Fast Cup</Badge>}
+                          </div>
                         </td>
                         <td className="py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
@@ -202,11 +204,7 @@ export default function DailyScrimTemplatesPage() {
                             >
                               <Save className="h-4 w-4" />
                             </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDelete(template.id)}
-                            >
+                            <Button variant="destructive" size="sm" onClick={() => handleDelete(template.id)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
@@ -221,29 +219,64 @@ export default function DailyScrimTemplatesPage() {
         </Card>
       </div>
 
-      {/* Add Modal */}
       <Modal isOpen={addModalOpen} onClose={() => setAddModalOpen(false)}>
         <ModalHeader>
           <ModalTitle>Yeni Şablon</ModalTitle>
-          <ModalDescription>Günlük scrim şablonu ekleyin</ModalDescription>
+          <ModalDescription>Günlük turnuva şablonu ekleyin.</ModalDescription>
         </ModalHeader>
         <form action={handleAdd}>
           <ModalBody className="space-y-4">
-            <Input name="name" placeholder="Şablon adı (sabaha/akşam)" required />
-            <Input name="title" placeholder="Scrim başlığı" required />
-            <Input name="slugSuffix" placeholder="Slug suffix (morning/evening)" required />
+            <Input name="name" placeholder="Şablon adı (sabah/gece)" required />
+            <Input name="title" placeholder="Turnuva başlığı" required />
+            <Input name="slugSuffix" placeholder="Slug eki (morning/night)" required />
             <Input type="time" name="startTime" required />
+
             <div className="grid gap-3 sm:grid-cols-2">
               <select
                 name="mode"
                 className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                defaultValue="TPP"
+                defaultValue="BO1"
               >
-                <option value="TPP">TPP</option>
-                <option value="FPP">FPP</option>
+                <option value="BO1">BO1</option>
+                <option value="BO3">BO3</option>
               </select>
-              <Input name="mapName" placeholder="Harita adı" required />
+              <Input name="mapName" placeholder="Lig etiketi" required />
             </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <select
+                name="tournamentType"
+                className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                defaultValue="fast_cup"
+              >
+                <option value="ucl">UCL</option>
+                <option value="uel">UEL</option>
+                <option value="ukl">UKL</option>
+                <option value="fast_cup">Fast Cup</option>
+                <option value="custom">Özel</option>
+              </select>
+              <Input type="number" name="maxSlots" min={2} max={128} defaultValue={32} required />
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <select
+                name="isFastCup"
+                className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                defaultValue="true"
+              >
+                <option value="true">Fast Cup</option>
+                <option value="false">Standart</option>
+              </select>
+              <select
+                name="isEnabled"
+                className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                defaultValue="true"
+              >
+                <option value="true">Aktif</option>
+                <option value="false">Pasif</option>
+              </select>
+            </div>
+
             <textarea
               name="announcement"
               placeholder="Oturum duyurusu (isteğe bağlı)"
@@ -251,11 +284,6 @@ export default function DailyScrimTemplatesPage() {
               className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none"
               maxLength={500}
             />
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Aktif olsun</span>
-              <input type="hidden" name="isEnabled" value="true" />
-              <ToggleLeft className="h-5 w-5 text-primary" />
-            </div>
           </ModalBody>
           <ModalFooter>
             <Button type="button" variant="outline" onClick={() => setAddModalOpen(false)}>
@@ -266,11 +294,10 @@ export default function DailyScrimTemplatesPage() {
         </form>
       </Modal>
 
-      {/* Edit Modal */}
       <Modal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)}>
         <ModalHeader>
           <ModalTitle>Şablon Güncelle</ModalTitle>
-          <ModalDescription>Seçilen şablonu düzenleyin</ModalDescription>
+          <ModalDescription>Seçilen şablonu düzenleyin.</ModalDescription>
         </ModalHeader>
         {selectedTemplate && (
           <form action={handleEdit}>
@@ -279,17 +306,53 @@ export default function DailyScrimTemplatesPage() {
               <Input name="title" defaultValue={selectedTemplate.title} required />
               <Input name="slugSuffix" defaultValue={selectedTemplate.slugSuffix} required />
               <Input type="time" name="startTime" defaultValue={selectedTemplate.startTime} required />
+
               <div className="grid gap-3 sm:grid-cols-2">
                 <select
                   name="mode"
                   className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm focus:border-primary focus:outline-none"
                   defaultValue={selectedTemplate.mode}
                 >
-                  <option value="TPP">TPP</option>
-                  <option value="FPP">FPP</option>
+                  <option value="BO1">BO1</option>
+                  <option value="BO3">BO3</option>
                 </select>
                 <Input name="mapName" defaultValue={selectedTemplate.mapName} required />
               </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <select
+                  name="tournamentType"
+                  className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  defaultValue={selectedTemplate.tournamentType}
+                >
+                  <option value="ucl">UCL</option>
+                  <option value="uel">UEL</option>
+                  <option value="ukl">UKL</option>
+                  <option value="fast_cup">Fast Cup</option>
+                  <option value="custom">Özel</option>
+                </select>
+                <Input type="number" name="maxSlots" min={2} max={128} defaultValue={selectedTemplate.maxSlots} required />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <select
+                  name="isFastCup"
+                  className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  defaultValue={selectedTemplate.isFastCup ? "true" : "false"}
+                >
+                  <option value="true">Fast Cup</option>
+                  <option value="false">Standart</option>
+                </select>
+                <select
+                  name="isEnabled"
+                  className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  defaultValue={selectedTemplate.isEnabled ? "true" : "false"}
+                >
+                  <option value="true">Aktif</option>
+                  <option value="false">Pasif</option>
+                </select>
+              </div>
+
               <textarea
                 name="announcement"
                 defaultValue={selectedTemplate.announcement || ""}
@@ -298,31 +361,6 @@ export default function DailyScrimTemplatesPage() {
                 className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none"
                 maxLength={500}
               />
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Aktif olsun</span>
-                <input
-                  type="hidden"
-                  name="isEnabled"
-                  value={selectedTemplate.isEnabled ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSelectedTemplate((prev) =>
-                      prev ? { ...prev, isEnabled: !prev.isEnabled } : prev
-                    )
-                  }
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    selectedTemplate.isEnabled ? "bg-green-500" : "bg-secondary"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      selectedTemplate.isEnabled ? "translate-x-6" : "translate-x-1"
-                    }`}
-                  />
-                </button>
-              </div>
             </ModalBody>
             <ModalFooter>
               <Button type="button" variant="outline" onClick={() => setEditModalOpen(false)}>

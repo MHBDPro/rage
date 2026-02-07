@@ -70,7 +70,7 @@ export function AdminShell({ username, logoutAction, children }: AdminShellProps
             {!isCollapsed && (
               <div>
                 <p className="text-[10px] uppercase tracking-[0.4em] text-white/40">
-                  Command Deck
+                  Yönetim Merkezi
                 </p>
                 <p className="text-sm font-bold uppercase tracking-wider text-primary">
                   {siteConfig.brand.name}
@@ -81,7 +81,7 @@ export function AdminShell({ username, logoutAction, children }: AdminShellProps
           <button
             onClick={() => setIsCollapsed((prev) => !prev)}
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 text-white/60 transition hover:text-white"
-            aria-label="Toggle sidebar"
+            aria-label="Yan menüyü aç veya kapat"
           >
             {isCollapsed ? (
               <PanelLeftOpen className="h-4 w-4" />
@@ -140,7 +140,7 @@ export function AdminShell({ username, logoutAction, children }: AdminShellProps
           <button
             onClick={() => setIsMenuOpen(true)}
             className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 text-white/70"
-            aria-label="Open admin menu"
+            aria-label="Yönetim menüsünü aç"
           >
             <Menu className="h-5 w-5" />
           </button>
@@ -191,7 +191,7 @@ export function AdminShell({ username, logoutAction, children }: AdminShellProps
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-[0.4em] text-white/40">
-                      Grid Menu
+                      Hızlı Panel
                     </p>
                     <p className="text-sm font-bold uppercase tracking-wider text-white">
                       {pageTitle}
@@ -201,7 +201,7 @@ export function AdminShell({ username, logoutAction, children }: AdminShellProps
                 <button
                   onClick={() => setIsMenuOpen(false)}
                   className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 text-white/70"
-                  aria-label="Close admin menu"
+                  aria-label="Yönetim menüsünü kapat"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -234,7 +234,7 @@ export function AdminShell({ username, logoutAction, children }: AdminShellProps
               <div className="mt-6 flex items-center justify-between rounded-2xl border border-white/10 bg-black/40 px-4 py-3">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.3em] text-white/40">
-                    Operator
+                    Operatör
                   </p>
                   <p className="text-sm font-semibold text-white/70">{username}</p>
                 </div>

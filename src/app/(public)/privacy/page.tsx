@@ -58,7 +58,7 @@ export default function PrivacyPage() {
             </CardHeader>
             <CardContent>
               <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
-                <li>Scrim kayitlarini yonetmek ve platformu sunmak.</li>
+                <li>Turnuva kayitlarini yonetmek ve platformu sunmak.</li>
                 <li>Guvenlik, suistimal onleme ve hata tespiti.</li>
                 <li>Urun performansini analiz etmek ve gelistirmek.</li>
                 <li>Yasal yukumluluklerin yerine getirilmesi.</li>

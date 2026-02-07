@@ -84,7 +84,7 @@ export default function SettingsPage() {
             Ayarlar
           </h1>
           <p className="text-muted-foreground">
-            Scrim kayıt ayarlarını yapılandırın
+            Turnuva kayıt ayarlarını yapılandırın
           </p>
         </div>
 
@@ -116,7 +116,7 @@ export default function SettingsPage() {
                     Etkinleştirildiğinde, kullanıcılar slot için kayıt olamazlar.
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Bakım sırasında veya scrimler çalışmadığında kullanın.
+                    Bakım sırasında veya turnuvalar çalışmadığında kullanın.
                   </p>
                 </div>
                 <button

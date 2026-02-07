@@ -71,6 +71,13 @@
       "when": 1770471038402,
       "tag": "0009_multi_leaderboards",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1770476018407,
+      "tag": "0010_rage_federation_pivot",
+      "breakpoints": true
     }
   ]
 }

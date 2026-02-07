@@ -3,36 +3,28 @@
  *
  * This is the SINGLE SOURCE OF TRUTH for all branding, colors, text, and settings.
  * Edit this file to customize the platform for different clients.
- *
- * Quick Start:
- * 1. Change brand.name and brand.tagline for new organization
- * 2. Update colors (or use a preset from presets.ts)
- * 3. Update ui strings for translations
- * 4. Run `pnpm build` to apply changes
  */
 
 import type { SiteConfig } from "./types";
 import { getPreset } from "./presets";
 
-// Get the emerald-cyber preset to match logo's green gradient
-const preset = getPreset("emerald-cyber")!;
+const preset = getPreset("rage-federation")!;
 
 export const siteConfig: SiteConfig = {
   // ============================================
   // BRAND IDENTITY
   // ============================================
   brand: {
-    name: "RCSF",
-    tagline: "ORGANİZASYON",
-    fullName: "RCSF ORGANİZASYON",
+    name: "Rage Federasyonu",
+    tagline: "RAGE FEDERASYONU",
+    fullName: "Rage Federasyonu",
     description:
-      "Türkiye'nin önde gelen PUBG Mobile esports organizasyonu. Günlük maçlarda yarışın ve liderlik tablosunda yerinizi alın.",
-    copyrightHolder: "RCSF ORGANİZASYON",
+      "Türkiye'nin premium eFootball rekabet sahnesi. Hızlı turnuvalara katılın, liglerde yükselin ve prestij kazanın.",
+    copyrightHolder: "Rage Federasyonu",
   },
 
   // ============================================
   // THEME COLORS
-  // Use preset.colors or define custom colors
   // ============================================
   colors: preset.colors,
 
@@ -40,23 +32,21 @@ export const siteConfig: SiteConfig = {
   // SEO CONFIGURATION
   // ============================================
   seo: {
-    defaultTitle: "RCSF ORGANİZASYON | PUBG Mobile Esports Platformu",
-    titleTemplate: "%s | RCSF ORGANİZASYON",
+    defaultTitle: "Rage Federasyonu | eFootball Turnuva Platformu",
+    titleTemplate: "%s | Rage Federasyonu",
     description:
-      "RCSF organizasyonu - Türkiye'nin premier PUBG Mobile esports maç platformu. Takımınızı kaydedin, liderlik tablolarını takip edin ve günlük maçlarda yarışın.",
+      "Rage Federasyonu eFootball turnuva platformu. UCL, UEL ve UKL liglerinde yarışın, Fast Cup ile anında mücadeleye girin.",
     keywords: [
-      "RCSF organizasyonu",
-      "RCSF organization",
-      "RCSF ORGANİZASYON",
-      "PUBG Mobile",
-      "PUBG Mobile Türkiye",
-      "Esports Maç",
-      "Maç Organizasyonu",
-      "Esports Turnuva",
-      "RCSF",
-      "PUBG Mobile Esports",
-      "Battle Royale",
-      "Gaming Organization",
+      "Rage Federasyonu",
+      "eFootball Türkiye",
+      "PES turnuva",
+      "eFootball lig",
+      "UCL eFootball",
+      "UEL eFootball",
+      "UKL eFootball",
+      "Fast Cup",
+      "1v1 turnuva",
+      "espor futbol",
     ],
     locale: "tr_TR",
     htmlLang: "tr",
@@ -65,105 +55,112 @@ export const siteConfig: SiteConfig = {
   },
 
   // ============================================
-  // CONTENT STRINGS (Game-specific)
+  // CONTENT STRINGS
   // ============================================
   content: {
-    gameName: "PUBG Mobile",
-    scrimTerm: "Maç",
-    scrimTermPlural: "Maçlar",
-    heroTitle: "Scrim Arenası",
+    gameName: "eFootball",
+    scrimTerm: "Turnuva",
+    scrimTermPlural: "Turnuvalar",
+    heroTitle: "Rage Federasyonu",
     heroSubtitle:
-      "Dinamik oturumlar, yeni haritalar ve sezonun en iyi takımları.",
-    systemStatusOnline: "Tüm Sistemler Çalışıyor",
+      "Şampiyonlar Ligi atmosferinde, hızlı ve prestijli 1v1 eFootball turnuvaları.",
+    systemStatusOnline: "Sistem Aktif",
     registrationOpen: "Kayıt Açık",
     registrationClosed: "Kayıt {time} saatinde açılıyor",
   },
 
   // ============================================
-  // UI STRINGS (All user-facing text)
-  // Translate this section for different languages
+  // UI STRINGS
   // ============================================
   ui: {
-    // Navigation
     nav: {
       home: "Ana Sayfa",
-      leaderboard: "Liderlik Tablosu",
+      leaderboard: "Ligler",
       rules: "Kurallar",
-      adminPanel: "Kontrol Paneli",
+      adminPanel: "Yönetim",
     },
 
-    // Slot/Registration
     slots: {
       available: "MÜSAİT",
       filled: "DOLU",
-      total: "Toplam Slot",
-      open: "AÇIK SLOT",
+      total: "Toplam Kontenjan",
+      open: "AÇIK KONTENJAN",
       locked: "KİLİTLİ",
       offline: "ÇEVRİMDIŞI",
       online: "ÇEVRİMİÇİ",
       restricted: "SINIRLI",
-      clickToJoin: "KATILMAK İÇİN TIKLA",
+      clickToJoin: "KAYIT OL",
       registered: "KAYITLI",
-      // Additional slot UI strings
-      slotRegistration: "Slot Kaydı",
-      selectSlot: "Müsait bir slot seçin",
-      slotsNowOpen: "Slotlar şimdi açık!",
+      slotRegistration: "Kontenjan Kaydı",
+      selectSlot: "Müsait bir kontenjan seçin",
+      slotsNowOpen: "Kayıtlar şimdi açık",
       registrationOpensAt: "Kayıt {time} saatinde açılıyor.",
       registrationOpen: "Kayıt Açık",
       maintenanceTitle: "Bakım Modu",
-      maintenanceDescription: "Kayıt geçici olarak devre dışı bırakıldı. Lütfen daha sonra tekrar kontrol edin.",
+      maintenanceDescription:
+        "Kayıt geçici olarak kapatıldı. Lütfen biraz sonra tekrar deneyin.",
       percentFull: "{percent}% DOLU",
     },
 
-    // Forms
     forms: {
-      teamName: "Takım Adı",
-      teamNamePlaceholder: "Takım adınızı girin",
+      teamName: "Oyuncu Adı",
+      teamNamePlaceholder: "Oyuncu adını girin",
+      playerName: "Oyuncu Adı",
+      playerNamePlaceholder: "Maçta görünecek oyuncu adınız",
+      psnId: "PSN / Konami ID",
+      psnIdPlaceholder: "Örn: rage_player",
+      teamSelection: "Seçilen Takım",
+      teamSelectionPlaceholder: "Örn: Real Madrid",
       player1: "Oyuncu 1",
       player2: "Oyuncu 2",
       player3: "Oyuncu 3",
       player4: "Oyuncu 4",
       playerPlaceholder: "Oyuncu adını girin",
-      instagram: "Instagram Kullanıcı Adı",
+      instagram: "Instagram",
       instagramPlaceholder: "@kullaniciadi",
-      submit: "Takımı Kaydet",
+      submit: "Kaydı Tamamla",
       cancel: "İptal",
       submitting: "Kaydediliyor...",
-      success: "Kayıt Tamamlandı!",
-      successMessage: "Slot #{slot} için başarıyla kayıt oldunuz.",
-      // Modal strings
-      registerTitle: "Kayıt",
-      registerDescription: "Bugünkü maçta yerinizi güvence altına almak için takım bilgilerinizi girin.",
+      success: "Kayıt Tamamlandı",
+      successMessage: "Kontenjan #{slot} için kaydınız başarıyla alındı.",
+      registerTitle: "Turnuva Kaydı",
+      registerDescription:
+        "PSN/Konami ID ve takım seçiminizi girerek 1v1 turnuvaya kaydolun.",
     },
 
-    // Countdown
     countdown: {
       title: "Kayıt Açılışına Kalan Süre",
-      subtitle: "Günlük maçlar {time} saatinde başlıyor",
+      subtitle: "Günün turnuvaları {time} saatinde başlıyor",
       hours: "Saat",
       minutes: "Dakika",
       seconds: "Saniye",
     },
+
     landing: {
-      heroEyebrow: "RCSF MULTI-SESSION",
-      heroTitle: "Neon Scrim League",
-      heroSubtitle: "Her gün yeni oturumlar, sıralama savaşları ve şampiyonluklar.",
-      championLabel: "Son Şampiyon",
-      championFallbackTitle: "Henüz Şampiyon Yok",
-      championFallbackSubtitle: "İlk zafer için aktif oturumlardan birine katılın.",
-      viewScrims: "Aktif Oturumları Gör",
-      activeScrimsTitle: "Aktif ve Yaklaşan Scrimler",
-      activeScrimsSubtitle: "Kayıtlar açık olan veya başlamak üzere olan oturumlar.",
+      heroEyebrow: "RAGE FEDERASYONU",
+      heroTitle: "Rage Federasyonu",
+      heroSubtitle:
+        "UCL, UEL ve UKL sahnesinde rekabet et. Gecenin atmosferinde prestij için oyna.",
+      championLabel: "Son Lider",
+      championFallbackTitle: "Henüz Lider Yok",
+      championFallbackSubtitle: "İlk zafer için yaklaşan turnuvalardan birine katıl.",
+      viewScrims: "Turnuvaları Gör",
+      activeScrimsTitle: "Yaklaşan Turnuvalar",
+      activeScrimsSubtitle:
+        "Başlangıç saati yaklaşan veya canlı olan tüm turnuvaları keşfedin.",
       adLabel: "Sponsorlu",
       sessionStartsAt: "Başlangıç",
-      sessionModeLabel: "Mod",
-      sessionMapLabel: "Harita",
-      statusActive: "AKTIF",
-      statusClosed: "YAKINDA",
-      statusCompleted: "TAMAMLANDI",
+      sessionModeLabel: "Format",
+      sessionMapLabel: "Lig",
+      fastCupTitle: "Fast Cup",
+      fastCupSubtitle:
+        "Anında eşleşmeli kısa turnuvalara tek adımda katılın.",
+      fastCupAction: "Fast Cup'a Git",
+      statusActive: "CANLI",
+      statusClosed: "YAKLAŞAN",
+      statusCompleted: "BİTTİ",
     },
 
-    // Footer
     footer: {
       quickLinks: "Hızlı Linkler",
       connect: "Bağlan",
@@ -173,76 +170,74 @@ export const siteConfig: SiteConfig = {
       allSystemsOperational: "Tüm Sistemler Çalışıyor",
     },
 
-    // Admin
     admin: {
-      controlPanel: "Kontrol Paneli",
-      dashboard: "Yönetici Paneli",
-      slotManager: "Slot Yöneticisi",
+      controlPanel: "Yönetim Paneli",
+      dashboard: "Yönetim Paneli",
+      slotManager: "Kontenjan Yöneticisi",
       settings: "Ayarlar",
       logout: "Çıkış Yap",
       login: "Giriş Yap",
-      loginSubtitle: "Yönetici Kontrol Paneli",
+      loginSubtitle: "Yönetim Erişimi",
       username: "Kullanıcı Adı",
       password: "Şifre",
     },
 
-    // Leaderboard
     leaderboard: {
       title: "Liderlik Tablosu",
-      indexTitle: "Liderlik Tabloları",
-      indexSubtitle: "Aktif ve arşivlenmiş ligleri keşfedin.",
-      adminTitle: "Liderlik Komuta Merkezi",
-      adminSubtitle: "Ligleri oluşturun, ana ligi belirleyin ve takımları yönetin.",
-      createLabel: "Yeni Liderlik Tablosu",
-      manageEntriesLabel: "Takımları Yönet",
+      indexTitle: "Resmi Ligler",
+      indexSubtitle: "UCL, UEL ve UKL liglerini takip edin.",
+      adminTitle: "Lig Yönetim Merkezi",
+      adminSubtitle: "Ligleri oluşturun, ana ligi belirleyin ve oyuncu skorlarını yönetin.",
+      createLabel: "Yeni Lig",
+      manageEntriesLabel: "Oyuncuları Yönet",
       setMainLabel: "Ana Lig Yap",
       statusLabel: "Durum",
       slugLabel: "Slug",
-      slugPlaceholder: "main-leaderboard",
+      slugPlaceholder: "ucl",
       goldLabel: "ALTIN",
       silverLabel: "GÜMÜŞ",
       bronzeLabel: "BRONZ",
       activeLabel: "Aktif",
       archivedLabel: "Arşiv",
       viewDetails: "Detayları Gör",
-      entriesLabel: "Takım",
-      topTeamLabel: "Lider Takım",
+      entriesLabel: "Oyuncu",
+      topTeamLabel: "Lider Oyuncu",
       mainLabel: "Ana Lig",
-      emptyBoards: "Henüz liderlik tablosu yok",
-      emptyEntries: "Henüz takım eklenmedi",
-      addTeamLabel: "Takım Ekle",
-      editTeamLabel: "Takımı Düzenle",
+      emptyBoards: "Henüz lig bulunmuyor",
+      emptyEntries: "Henüz oyuncu eklenmedi",
+      addTeamLabel: "Oyuncu Ekle",
+      editTeamLabel: "Oyuncuyu Düzenle",
       rank: "Sıra",
-      team: "Takım",
+      team: "Oyuncu",
       points: "Puan",
       wins: "Galibiyet",
-      kills: "Kill",
+      kills: "Gol",
       matches: "Maç",
       noData: "Henüz veri yok",
     },
 
-    // Rules
     rules: {
       title: "Kurallar",
       warning:
-        "Kuralların ihlali, tüm maçlardan geçici veya kalıcı yasaklanma ile sonuçlanabilir.",
+        "Kural ihlalleri turnuvalardan geçici veya kalıcı uzaklaştırma ile sonuçlanabilir.",
     },
 
-    // Sponsors
     sponsors: {
       title: "Sponsorlarımız",
       viewAll: "Tümünü Gör",
       pageTitle: "Sponsorlar",
     },
+
     news: {
-      title: "Blog Merkezi",
-      subtitle: "Resmi duyurular, analizler ve taktik notları.",
-      empty: "Henüz yayınlanmış blog yok.",
+      title: "Duyuru Merkezi",
+      subtitle: "Resmi açıklamalar, turnuva haberleri ve strateji yazıları.",
+      empty: "Henüz yayınlanmış içerik yok.",
       readMore: "Devamını Oku",
       statusPublished: "YAYINDA",
       statusDraft: "TASLAK",
       authorLabel: "Yazar",
     },
+
     legal: {
       privacyTitle: "Gizlilik Politikası",
       termsTitle: "Kullanım Şartları",
@@ -250,7 +245,6 @@ export const siteConfig: SiteConfig = {
       lastUpdated: "Son Güncelleme",
     },
 
-    // Common
     common: {
       loading: "Yükleniyor...",
       error: "Bir hata oluştu",
@@ -268,9 +262,9 @@ export const siteConfig: SiteConfig = {
   // PLATFORM SETTINGS
   // ============================================
   platform: {
-    totalSlots: 25,
+    totalSlots: 32,
     schemaEventType: "SportsEvent",
-    schemaSport: "Esports",
+    schemaSport: "Football Esports",
   },
 
   // ============================================
@@ -279,21 +273,21 @@ export const siteConfig: SiteConfig = {
   navigation: {
     public: [
       { href: "/", label: "Ana Sayfa", icon: "Home" },
-      { href: "/scrims", label: "Scrimler", icon: "Calendar" },
-      { href: "/news", label: "Blog", icon: "Newspaper" },
-      { href: "/leaderboard", label: "Liderlik Tablosu", icon: "Trophy" },
-      { href: "/sponsors", label: "Sponsorlar", icon: "Award" },
+      { href: "/scrims", label: "Turnuvalar", icon: "Calendar" },
+      { href: "/fast-cup", label: "Fast Cup", icon: "Target" },
+      { href: "/leaderboard", label: "Ligler", icon: "Trophy" },
+      { href: "/news", label: "Duyurular", icon: "Newspaper" },
       { href: "/rules", label: "Kurallar", icon: "Shield" },
     ],
     admin: [
-      { href: "/admin", label: "Yönetici Paneli", icon: "LayoutDashboard" },
-      { href: "/admin/scrims", label: "Scrim Oturumları", icon: "Calendar" },
-      { href: "/admin/scrims/templates", label: "Günlük Şablonlar", icon: "BookOpen" },
-      { href: "/admin/news", label: "Blog", icon: "Newspaper" },
+      { href: "/admin", label: "Yönetim Paneli", icon: "LayoutDashboard" },
+      { href: "/admin/scrims", label: "Turnuva Oturumları", icon: "Calendar" },
+      { href: "/admin/scrims/templates", label: "Hızlı Şablonlar", icon: "BookOpen" },
+      { href: "/admin/leaderboard", label: "Ligler", icon: "Trophy" },
+      { href: "/admin/news", label: "Duyurular", icon: "Newspaper" },
       { href: "/admin/sponsors", label: "Sponsorlar", icon: "Sparkles" },
       { href: "/admin/settings", label: "Ayarlar", icon: "Settings" },
       { href: "/admin/rules", label: "Kurallar", icon: "Shield" },
-      { href: "/admin/leaderboard", label: "Liderlik Tablosu", icon: "Trophy" },
     ],
     legal: [
       { href: "/privacy", label: "Gizlilik" },
@@ -309,11 +303,11 @@ export const siteConfig: SiteConfig = {
     socialLinks: [
       {
         platform: "instagram",
-        url: "https://instagram.com/rcsf.official",
+        url: "https://instagram.com/ragefederasyonu",
         shortLabel: "IG",
       },
-      { platform: "discord", url: "https://discord.gg/rcsf", shortLabel: "DC" },
-      { platform: "twitter", url: "https://twitter.com/rcsf", shortLabel: "TW" },
+      { platform: "discord", url: "https://discord.gg/ragefederasyonu", shortLabel: "DC" },
+      { platform: "twitter", url: "https://twitter.com/ragefederasyon", shortLabel: "TW" },
     ],
   },
 
@@ -321,7 +315,7 @@ export const siteConfig: SiteConfig = {
   // CONTACT
   // ============================================
   contact: {
-    email: "contact@rcsf.tr",
+    email: "contact@ragefederasyonu.com",
   },
 
   // ============================================
@@ -336,8 +330,7 @@ export const siteConfig: SiteConfig = {
   // ============================================
   // BASE URL
   // ============================================
-  baseUrl:
-    process.env.NEXT_PUBLIC_APP_URL || "https://rcsf.tr/",
+  baseUrl: process.env.NEXT_PUBLIC_APP_URL || "https://ragefederasyonu.com/",
 };
 
 // Re-export types for convenience

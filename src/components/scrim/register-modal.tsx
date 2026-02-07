@@ -3,9 +3,16 @@
 import * as React from "react";
 import { useFormStatus } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Instagram, Users, CheckCircle2, AlertCircle } from "lucide-react";
+import { Shield, UserRound, Gamepad2, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { Modal, ModalHeader, ModalTitle, ModalDescription, ModalBody, ModalFooter } from "@/components/ui/modal";
+import {
+  Modal,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+  ModalBody,
+  ModalFooter,
+} from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { registerSlot } from "@/lib/actions/scrim";
@@ -52,7 +59,7 @@ export function RegisterModal({
       setTimeout(() => {
         onClose();
         setResult(null);
-      }, 2000);
+      }, 1700);
     } else {
       toast.error(response.message);
     }
@@ -69,15 +76,15 @@ export function RegisterModal({
         {result?.success ? (
           <motion.div
             key="success"
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             className="flex flex-col items-center py-8 text-center"
           >
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              transition={{ type: "spring", stiffness: 220, damping: 16 }}
               className="mb-4 rounded-full bg-green-500/20 p-4"
             >
               <CheckCircle2 className="h-12 w-12 text-green-500" />
@@ -88,12 +95,6 @@ export function RegisterModal({
             <p className="mt-2 text-muted-foreground">
               {siteConfig.ui.forms.successMessage.replace("#{slot}", `#${slotNumber}`)}
             </p>
-            <motion.div
-              className="mt-6 h-1 w-32 overflow-hidden rounded-full bg-green-500/20"
-              initial={{ width: "100%" }}
-              animate={{ width: "0%" }}
-              transition={{ duration: 2, ease: "linear" }}
-            />
           </motion.div>
         ) : (
           <motion.div
@@ -104,66 +105,50 @@ export function RegisterModal({
           >
             <ModalHeader>
               <ModalTitle>
-                <span className="text-primary">{siteConfig.ui.forms.registerTitle}</span> Slot #{slotNumber}
+                <span className="text-primary">{siteConfig.ui.forms.registerTitle}</span> #{slotNumber}
               </ModalTitle>
-              <ModalDescription>
-                {siteConfig.ui.forms.registerDescription}
-              </ModalDescription>
+              <ModalDescription>{siteConfig.ui.forms.registerDescription}</ModalDescription>
             </ModalHeader>
 
             <form action={formAction}>
               <ModalBody className="space-y-4">
                 <div>
-                  <label
-                    htmlFor="teamName"
-                    className="mb-2 block text-sm font-medium"
-                  >
-                    {siteConfig.ui.forms.teamName}
+                  <label htmlFor="playerName" className="mb-2 block text-sm font-medium">
+                    {siteConfig.ui.forms.playerName}
                   </label>
                   <Input
-                    id="teamName"
-                    name="teamName"
-                    placeholder={siteConfig.ui.forms.teamNamePlaceholder}
-                    icon={<Users className="h-4 w-4" />}
+                    id="playerName"
+                    name="playerName"
+                    placeholder={siteConfig.ui.forms.playerNamePlaceholder}
+                    icon={<UserRound className="h-4 w-4" />}
                     required
                     maxLength={100}
                   />
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {[
-                    siteConfig.ui.forms.player1,
-                    siteConfig.ui.forms.player2,
-                    siteConfig.ui.forms.player3,
-                    siteConfig.ui.forms.player4,
-                  ].map((label, index) => (
-                    <div key={label}>
-                      <label className="mb-2 block text-sm font-medium">
-                        {label}
-                      </label>
-                      <Input
-                        name={`playerName${index + 1}`}
-                        placeholder={siteConfig.ui.forms.playerPlaceholder}
-                        icon={<Users className="h-4 w-4" />}
-                        required
-                        maxLength={50}
-                      />
-                    </div>
-                  ))}
+                <div>
+                  <label htmlFor="psnId" className="mb-2 block text-sm font-medium">
+                    {siteConfig.ui.forms.psnId}
+                  </label>
+                  <Input
+                    id="psnId"
+                    name="psnId"
+                    placeholder={siteConfig.ui.forms.psnIdPlaceholder}
+                    icon={<Shield className="h-4 w-4" />}
+                    required
+                    maxLength={100}
+                  />
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="instagram"
-                    className="mb-2 block text-sm font-medium"
-                  >
-                    {siteConfig.ui.forms.instagram}
+                  <label htmlFor="teamSelection" className="mb-2 block text-sm font-medium">
+                    {siteConfig.ui.forms.teamSelection}
                   </label>
                   <Input
-                    id="instagram"
-                    name="instagram"
-                    placeholder={siteConfig.ui.forms.instagramPlaceholder}
-                    icon={<Instagram className="h-4 w-4" />}
+                    id="teamSelection"
+                    name="teamSelection"
+                    placeholder={siteConfig.ui.forms.teamSelectionPlaceholder}
+                    icon={<Gamepad2 className="h-4 w-4" />}
                     required
                     maxLength={100}
                   />

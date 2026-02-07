@@ -51,6 +51,27 @@ export const themePresets: ThemePreset[] = [
   },
 
   // ============================================
+  // RAGE FEDERATION (Premium Football Night)
+  // ============================================
+  {
+    id: "rage-federation",
+    name: "Rage Federation",
+    colors: {
+      primary: "#10b981",
+      primaryGlow: "#34d399",
+      accent: "#f97316",
+      accentGlow: "#fb923c",
+      background: "#05080d",
+      foreground: "#f3f7f5",
+      surface: "#0c1118",
+      surfaceElevated: "#151c26",
+      muted: "#8b95a7",
+      success: "#22c55e",
+      danger: "#ef4444",
+    },
+  },
+
+  // ============================================
   // PURPLE HAZE
   // ============================================
   {

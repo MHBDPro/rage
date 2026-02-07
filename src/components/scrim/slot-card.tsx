@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { User, Lock, Crosshair } from "lucide-react";
+import { UserRound, Lock, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Slot } from "@/lib/db/schema";
+import { siteConfig } from "@/config/site";
 
 interface SlotCardProps {
   slotNumber: number;
@@ -24,91 +25,61 @@ export const SlotCard = React.memo(function SlotCard({
   const isTaken = !!slot && !slot.isLocked;
   const isAvailable = !isTaken && !isSlotLocked;
 
+  const occupant = slot?.playerName || slot?.teamName || siteConfig.ui.slots.filled;
+
   return (
     <button
       onClick={isAvailable ? onClick : undefined}
       disabled={!isAvailable}
       className={cn(
-        "group relative flex h-[180px] w-full flex-col overflow-hidden transition-all duration-300",
-        "bg-[#0a0b14] border border-white/5",
-        // Hover Effects
-        isAvailable && "hover:bg-[#0f111a] hover:border-primary/50 cursor-pointer",
-        isTaken && "bg-red-950/5 border-red-900/20 cursor-default",
-        isSlotLocked && "bg-yellow-950/5 border-yellow-900/20 cursor-not-allowed",
+        "group relative flex h-[180px] w-full flex-col overflow-hidden border transition-all duration-300",
+        isAvailable && "cursor-pointer border-white/10 bg-white/[0.02] hover:border-primary/50 hover:bg-primary/[0.08]",
+        isTaken && "cursor-default border-red-500/20 bg-red-500/[0.08]",
+        isSlotLocked && "cursor-not-allowed border-yellow-500/30 bg-yellow-500/[0.08]",
         className
       )}
     >
-      {/* 1. Background Big Number */}
-      <div className={cn(
-        "absolute right-2 top-0 text-[8rem] font-black leading-none font-[family-name:var(--font-rajdhani)] opacity-[0.03] select-none pointer-events-none transition-all duration-500",
-        "group-hover:opacity-[0.06] group-hover:scale-110",
-        isAvailable && "text-primary",
-        isTaken && "text-red-500",
-        isSlotLocked && "text-yellow-500"
-      )}>
-        {slotNumber}
-      </div>
-
-      {/* 2. Top Status Bar */}
-      <div className="flex w-full items-center justify-between border-b border-white/5 bg-black/20 px-4 py-2 backdrop-blur-sm">
-        <span className="font-mono text-xs font-bold text-white/30">
-          SLOT-{slotNumber.toString().padStart(2, "0")}
-        </span>
-        <div className={cn(
-          "h-1.5 w-1.5 rounded-full shadow-[0_0_8px_currentColor]",
-          isAvailable ? "bg-primary text-primary animate-pulse" :
-            isTaken ? "bg-red-500 text-red-500" :
-              "bg-yellow-500 text-yellow-500"
-        )} />
-      </div>
-
-      {/* 3. Main Content */}
-      <div className="relative flex flex-1 flex-col items-center justify-center p-4 z-10">
-        {/* Icon Layer */}
-        <div className="mb-3 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-1">
-          {isSlotLocked ? (
-            <Lock className="h-6 w-6 text-yellow-500/50" />
-          ) : isTaken ? (
-            <Crosshair className="h-6 w-6 text-red-500/50" />
-          ) : (
-            <User className="h-6 w-6 text-primary/50 group-hover:text-primary group-hover:drop-shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" />
+      <div className="flex items-center justify-between border-b border-white/10 px-4 py-2 text-xs">
+        <span className="font-mono text-white/50">#{slotNumber.toString().padStart(2, "0")}</span>
+        <span
+          className={cn(
+            "inline-flex h-2 w-2 rounded-full",
+            isAvailable && "bg-green-400",
+            isTaken && "bg-red-400",
+            isSlotLocked && "bg-yellow-400"
           )}
-        </div>
-
-        {/* Text Layer */}
-        <div className="text-center">
-          <div className={cn(
-            "text-lg font-bold uppercase tracking-wider font-[family-name:var(--font-rajdhani)]",
-            isAvailable ? "text-white group-hover:text-primary transition-colors" : "text-white/60"
-          )}>
-            {isSlotLocked ? "RESTRICTED" : isTaken ? (slot?.teamName || "TAKEN") : "OPEN SLOT"}
-          </div>
-
-          {/* Subtext */}
-          <div className="mt-1 text-[10px] font-medium tracking-[0.2em] uppercase text-white/30">
-            {isSlotLocked ? "ACCESS DENIED" : isTaken ? "DEPLOYED" : "READY TO JOIN"}
-          </div>
-        </div>
+        />
       </div>
 
-      {/* 4. Active Corner Accents (Only on Available) */}
-      {isAvailable && (
-        <>
-          <div className="absolute bottom-0 left-0 h-3 w-3 border-b border-l border-primary/0 transition-all duration-300 group-hover:border-primary/60" />
-          <div className="absolute bottom-0 right-0 h-3 w-3 border-b border-r border-primary/0 transition-all duration-300 group-hover:border-primary/60" />
-        </>
-      )}
-
-      {/* 5. Locked Tape Effect */}
-      {isSlotLocked && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-          <div className="w-[150%] -rotate-12 bg-yellow-500/10 py-1 text-center border-y border-yellow-500/20">
-            <div className="text-[10px] font-bold text-yellow-500/40 tracking-[1em] whitespace-nowrap animate-marquee">
-              LOCKED // LOCKED // LOCKED // LOCKED // LOCKED // LOCKED
-            </div>
-          </div>
+      <div className="relative flex flex-1 flex-col items-center justify-center gap-2 p-4 text-center">
+        <div className="absolute -right-1 top-2 text-6xl font-black text-white/[0.04]">
+          {slotNumber}
         </div>
-      )}
+
+        {isSlotLocked ? (
+          <Lock className="h-6 w-6 text-yellow-400/70" />
+        ) : isTaken ? (
+          <Trophy className="h-6 w-6 text-red-400/70" />
+        ) : (
+          <UserRound className="h-6 w-6 text-primary/80" />
+        )}
+
+        <div className="text-sm font-semibold uppercase tracking-wide text-white">
+          {isSlotLocked
+            ? siteConfig.ui.slots.locked
+            : isTaken
+            ? occupant
+            : siteConfig.ui.slots.open}
+        </div>
+
+        <div className="text-[10px] uppercase tracking-[0.22em] text-white/45">
+          {isSlotLocked
+            ? siteConfig.ui.slots.restricted
+            : isTaken
+            ? siteConfig.ui.slots.registered
+            : siteConfig.ui.slots.clickToJoin}
+        </div>
+      </div>
     </button>
   );
 });

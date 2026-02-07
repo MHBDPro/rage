@@ -133,7 +133,7 @@ async function DashboardStats() {
             <Link href="/admin/scrims" className="block">
               <Button variant="outline" className="w-full justify-start">
                 <Calendar className="mr-2 h-4 w-4" />
-                Scrim Oturumlarını Yönet
+                Turnuva Oturumlarını Yönet
               </Button>
             </Link>
             <Link href="/admin/leaderboard" className="block">
@@ -163,7 +163,7 @@ async function DashboardStats() {
         <CardContent>
           {!latestSession ? (
             <p className="py-8 text-center text-muted-foreground">
-              Henüz scrim oturumu yok
+              Henüz turnuva oturumu yok
             </p>
           ) : latestSlots.length === 0 ? (
             <p className="py-8 text-center text-muted-foreground">
@@ -192,10 +192,10 @@ async function DashboardStats() {
                       Slot
                     </th>
                     <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">
-                      Takım
+                      Oyuncu
                     </th>
                     <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">
-                      Instagram
+                      PSN / Takım
                     </th>
                     <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">
                       Saat
@@ -208,9 +208,11 @@ async function DashboardStats() {
                       <td className="py-3">
                         <Badge variant="default">#{slot.slotNumber}</Badge>
                       </td>
-                      <td className="py-3 font-medium">{slot.teamName || siteConfig.ui.slots.locked}</td>
+                      <td className="py-3 font-medium">
+                        {slot.playerName || slot.teamName || siteConfig.ui.slots.locked}
+                      </td>
                       <td className="py-3 text-muted-foreground">
-                        {slot.instagram || "-"}
+                        {[slot.psnId, slot.teamSelection].filter(Boolean).join(" • ") || "-"}
                       </td>
                       <td className="py-3 text-sm text-muted-foreground">
                         {new Date(slot.createdAt).toLocaleTimeString("tr-TR", {
@@ -262,7 +264,7 @@ export default function AdminDashboard() {
             Kontrol Paneli
           </h1>
           <p className="text-muted-foreground">
-            Çoklu scrim oturumlarına genel bakış
+            Çoklu turnuva oturumlarına genel bakış
           </p>
         </div>
 

@@ -84,7 +84,7 @@ export function PublicNav() {
         and a slightly richer entrance on desktop.
       */}
       <motion.nav
-        className="pointer-events-none fixed left-0 right-0 top-10 z-50 mx-auto flex justify-center px-4 transform-gpu"
+        className="pointer-events-none fixed left-0 right-0 top-3 z-50 mx-auto flex justify-center px-4 transform-gpu md:top-4"
         style={{ willChange: "transform, opacity" }}
         initial={navInitial}
         animate={navAnimate}
@@ -92,7 +92,7 @@ export function PublicNav() {
       >
         <motion.div
           className={cn(
-            "pointer-events-auto flex items-center justify-between rounded-2xl border border-white/10 bg-[#0a0b14]/90 shadow-lg transition-[max-width,padding] duration-300 ease-out backdrop-blur-none md:backdrop-blur-xl",
+            "pointer-events-auto flex items-center justify-between rounded-2xl border border-white/10 bg-[#070b12]/92 shadow-[0_10px_40px_rgba(0,0,0,0.45)] transition-[max-width,padding] duration-300 ease-out backdrop-blur-none md:backdrop-blur-xl",
             isMicroHud
               ? "w-full max-w-[360px] gap-3 px-3 py-2"
               : "w-full max-w-5xl px-5 py-3"
@@ -102,7 +102,7 @@ export function PublicNav() {
           <Link href="/" className="flex items-center gap-3 group">
             <motion.div
               className={cn(
-                "relative overflow-hidden rounded-lg border border-primary/30 bg-primary/5 transition-colors group-hover:border-primary/60 group-hover:bg-primary/20",
+                "relative overflow-hidden rounded-lg border border-primary/45 bg-black/45 shadow-[0_0_24px_rgba(16,185,129,0.2)] transition-colors group-hover:border-primary/70",
                 isMicroHud ? "h-8 w-8" : "h-9 w-9"
               )}
             >
@@ -118,7 +118,7 @@ export function PublicNav() {
 
             <motion.div className={cn("flex flex-col", isMicroHud && "hidden sm:flex")}>
               <span className="font-[family-name:var(--font-rajdhani)] text-base font-bold uppercase leading-none tracking-wider text-white">
-                {siteConfig.brand.name}
+                {siteConfig.brand.fullName}
               </span>
               {!isMicroHud && (
                 <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary/80">
@@ -170,7 +170,7 @@ export function PublicNav() {
               "rounded-lg p-2 text-gray-300 transition-colors hover:bg-white/5 hover:text-white",
               isMicroHud ? "md:flex" : "md:hidden"
             )}
-            aria-label="Open navigation"
+            aria-label="Menüyü aç"
           >
             <Menu className="h-5 w-5" />
           </button>

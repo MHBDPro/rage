@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import {
-  getScrimSessionsForLanding,
+  getUpcomingScrimSessions,
+  getFastCupSessions,
   getScrimSettings,
 } from "@/lib/actions/scrim";
 import { getMainLeaderboardChampion } from "@/lib/actions/leaderboard";
@@ -36,8 +37,9 @@ const jsonLd = {
 };
 
 async function LandingData() {
-  const [sessions, champion, settings, sponsors] = await Promise.all([
-    getScrimSessionsForLanding(),
+  const [upcomingSessions, fastCupSessions, champion, settings, sponsors] = await Promise.all([
+    getUpcomingScrimSessions(),
+    getFastCupSessions(),
     getMainLeaderboardChampion(),
     getScrimSettings(),
     getSponsors(true),
@@ -45,7 +47,8 @@ async function LandingData() {
 
   return (
     <HomeContent
-      sessions={sessions}
+      upcomingSessions={upcomingSessions}
+      fastCupSessions={fastCupSessions}
       champion={champion}
       isMaintenance={settings.isMaintenance}
       announcement={settings.announcement}
@@ -76,7 +79,7 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <section aria-label="Scrim landing">
+      <section aria-label="Turnuva ana sayfası">
         <Suspense fallback={<LoadingSkeleton />}>
           <LandingData />
         </Suspense>

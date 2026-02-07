@@ -28,14 +28,13 @@ export default function PublicLayout({
         {/* Floating Island Navigation */}
         <PublicNav />
 
-        {/* Main Content - Adjusted padding for floating nav */}
-        <main className="pt-16">{children}</main>
+        <main>{children}</main>
 
-        {/* Tactical Footer - Modernized */}
-        <footer className="relative w-full overflow-hidden border-t border-white/10 bg-[#070810]">
+        <footer className="relative w-full overflow-hidden border-t border-white/10 bg-[#05080d]">
           <div className="pointer-events-none absolute inset-0">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.2),_transparent_60%)]" />
-            <div className="absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(180deg,rgba(0,0,0,0),rgba(16,185,129,0.12),rgba(0,0,0,0))] animate-scan" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(16,185,129,0.14),transparent_42%),radial-gradient(circle_at_80%_0%,rgba(249,115,22,0.14),transparent_42%)]" />
+            <div className="absolute left-1/2 top-4 h-56 w-56 -translate-x-1/2 rounded-full border border-primary/20 opacity-30 blur-2xl" />
+            <div className="absolute left-1/2 top-4 h-72 w-72 -translate-x-1/2 rounded-full border border-accent/20 opacity-25 blur-3xl" />
           </div>
 
           <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">

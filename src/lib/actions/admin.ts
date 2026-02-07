@@ -15,7 +15,7 @@ import {
   type RuleCard,
   type PointSystemItem,
   type ScrimStatus,
-  type ScrimMode,
+  type TournamentType,
   type LeaderboardStatus,
 } from "@/lib/db";
 import { eq, and, desc, asc, ne, lt } from "drizzle-orm";
@@ -72,14 +72,17 @@ const sessionSchema = z.object({
     .nullable()
     .transform((val) => (val ? val : "")),
   startTime: z.string().min(1, "Başlangıç zamanı gereklidir"),
-  mode: z.enum(["TPP", "FPP"]),
+  mode: z.enum(["BO1", "BO3"]),
   mapName: z
     .string()
-    .min(2, "Harita adı en az 2 karakter olmalıdır")
-    .max(100, "Harita adı 100 karakterden az olmalıdır")
+    .min(2, "Lig etiketi en az 2 karakter olmalıdır")
+    .max(100, "Lig etiketi 100 karakterden az olmalıdır")
     .refine((val) => !containsProfanity(val), {
-      message: "Harita adı uygunsuz içerik barındırıyor",
+      message: "Lig etiketi uygunsuz içerik barındırıyor",
     }),
+  maxSlots: z.coerce.number().int().min(2, "Kontenjan en az 2 olmalıdır").max(128, "Kontenjan en fazla 128 olabilir"),
+  tournamentType: z.enum(["ucl", "uel", "ukl", "fast_cup", "custom"]),
+  isFastCup: z.coerce.boolean(),
   status: z.enum(["active", "closed", "completed"]),
   announcement: z
     .string()
@@ -114,14 +117,17 @@ const dailyTemplateSchema = z.object({
       message: "Slug suffix uygunsuz içerik barındırıyor",
     }),
   startTime: z.string().regex(/^\d{2}:\d{2}$/, "Geçersiz saat formatı"),
-  mode: z.enum(["TPP", "FPP"]),
+  mode: z.enum(["BO1", "BO3"]),
   mapName: z
     .string()
-    .min(2, "Harita adı en az 2 karakter olmalıdır")
-    .max(100, "Harita adı 100 karakterden az olmalıdır")
+    .min(2, "Lig etiketi en az 2 karakter olmalıdır")
+    .max(100, "Lig etiketi 100 karakterden az olmalıdır")
     .refine((val) => !containsProfanity(val), {
-      message: "Harita adı uygunsuz içerik barındırıyor",
+      message: "Lig etiketi uygunsuz içerik barındırıyor",
     }),
+  maxSlots: z.coerce.number().int().min(2, "Kontenjan en az 2 olmalıdır").max(128, "Kontenjan en fazla 128 olabilir"),
+  tournamentType: z.enum(["ucl", "uel", "ukl", "fast_cup", "custom"]),
+  isFastCup: z.coerce.boolean(),
   announcement: z
     .string()
     .max(500, "Duyuru en fazla 500 karakter olabilir")
@@ -179,6 +185,9 @@ export async function createDailyScrimTemplate(
       startTime: formData.get("startTime"),
       mode: formData.get("mode"),
       mapName: formData.get("mapName"),
+      maxSlots: formData.get("maxSlots"),
+      tournamentType: formData.get("tournamentType"),
+      isFastCup: formData.get("isFastCup") === "true",
       announcement: formData.get("announcement") || null,
       isEnabled: formData.get("isEnabled") === "true",
     };
@@ -195,12 +204,15 @@ export async function createDailyScrimTemplate(
       startTime: parsed.data.startTime,
       mode: parsed.data.mode,
       mapName: parsed.data.mapName,
+      maxSlots: parsed.data.maxSlots,
+      tournamentType: parsed.data.tournamentType as TournamentType,
+      isFastCup: parsed.data.isFastCup,
       announcement: parsed.data.announcement || null,
       isEnabled: parsed.data.isEnabled,
     });
 
     revalidatePath("/admin/scrims/templates");
-    return { success: true, message: "Günlük scrim şablonu oluşturuldu" };
+    return { success: true, message: "Günlük turnuva şablonu oluşturuldu" };
   } catch (error) {
     console.error("Daily template error:", error);
     return { success: false, message: "Şablon oluşturulamadı" };
@@ -224,6 +236,9 @@ export async function updateDailyScrimTemplate(
       startTime: formData.get("startTime"),
       mode: formData.get("mode"),
       mapName: formData.get("mapName"),
+      maxSlots: formData.get("maxSlots"),
+      tournamentType: formData.get("tournamentType"),
+      isFastCup: formData.get("isFastCup") === "true",
       announcement: formData.get("announcement") || null,
       isEnabled: formData.get("isEnabled") === "true",
     };
@@ -242,6 +257,9 @@ export async function updateDailyScrimTemplate(
         startTime: parsed.data.startTime,
         mode: parsed.data.mode,
         mapName: parsed.data.mapName,
+        maxSlots: parsed.data.maxSlots,
+        tournamentType: parsed.data.tournamentType as TournamentType,
+        isFastCup: parsed.data.isFastCup,
         announcement: parsed.data.announcement || null,
         isEnabled: parsed.data.isEnabled,
         updatedAt: new Date(),
@@ -249,7 +267,7 @@ export async function updateDailyScrimTemplate(
       .where(eq(dailyScrimTemplates.id, id));
 
     revalidatePath("/admin/scrims/templates");
-    return { success: true, message: "Günlük scrim şablonu güncellendi" };
+    return { success: true, message: "Günlük turnuva şablonu güncellendi" };
   } catch (error) {
     console.error("Daily template update error:", error);
     return { success: false, message: "Şablon güncellenemedi" };
@@ -302,9 +320,12 @@ export async function runDailyScrimRollover(): Promise<ActionResponse> {
           title: template.title,
           slug: slugBase,
           startTime,
-          mode: template.mode as ScrimMode,
+          mode: template.mode,
           mapName: template.mapName,
-          status: "active",
+          maxSlots: template.maxSlots,
+          tournamentType: template.tournamentType,
+          isFastCup: template.isFastCup,
+          status: "closed",
           announcement: template.announcement || null,
           updatedAt: new Date(),
         });
@@ -326,13 +347,14 @@ export async function runDailyScrimRollover(): Promise<ActionResponse> {
       );
 
     revalidatePath("/");
+    revalidatePath("/fast-cup");
     revalidatePath("/admin/scrims");
     revalidatePath("/admin/scrims/templates");
 
-    return { success: true, message: "Günlük scrim oluşturma tamamlandı" };
+    return { success: true, message: "Günlük turnuva oluşturma tamamlandı" };
   } catch (error) {
     console.error("Daily rollover error:", error);
-    return { success: false, message: "Günlük scrim oluşturulamadı" };
+    return { success: false, message: "Günlük turnuva oluşturulamadı" };
   }
 }
 
@@ -351,6 +373,9 @@ export async function createScrimSession(
       startTime: formData.get("startTime"),
       mode: formData.get("mode"),
       mapName: formData.get("mapName"),
+      maxSlots: formData.get("maxSlots"),
+      tournamentType: formData.get("tournamentType"),
+      isFastCup: formData.get("isFastCup") === "true",
       status: formData.get("status"),
       announcement: formData.get("announcement") || null,
     };
@@ -368,8 +393,11 @@ export async function createScrimSession(
       title: parsed.data.title,
       slug: uniqueSlug,
       startTime,
-      mode: parsed.data.mode as ScrimMode,
+      mode: parsed.data.mode,
       mapName: parsed.data.mapName,
+      maxSlots: parsed.data.maxSlots,
+      tournamentType: parsed.data.tournamentType as TournamentType,
+      isFastCup: parsed.data.isFastCup,
       status: parsed.data.status as ScrimStatus,
       announcement: parsed.data.announcement || null,
       updatedAt: new Date(),
@@ -378,10 +406,10 @@ export async function createScrimSession(
     revalidatePath("/admin/scrims");
     revalidatePath("/");
 
-    return { success: true, message: "Scrim oturumu oluşturuldu" };
+    return { success: true, message: "Turnuva oturumu oluşturuldu" };
   } catch (error) {
     console.error("Create scrim session error:", error);
-    return { success: false, message: "Scrim oturumu oluşturulamadı" };
+    return { success: false, message: "Turnuva oturumu oluşturulamadı" };
   }
 }
 
@@ -401,6 +429,9 @@ export async function updateScrimSession(
       startTime: formData.get("startTime"),
       mode: formData.get("mode"),
       mapName: formData.get("mapName"),
+      maxSlots: formData.get("maxSlots"),
+      tournamentType: formData.get("tournamentType"),
+      isFastCup: formData.get("isFastCup") === "true",
       status: formData.get("status"),
       announcement: formData.get("announcement") || null,
     };
@@ -420,8 +451,11 @@ export async function updateScrimSession(
         title: parsed.data.title,
         slug: uniqueSlug,
         startTime,
-        mode: parsed.data.mode as ScrimMode,
+        mode: parsed.data.mode,
         mapName: parsed.data.mapName,
+        maxSlots: parsed.data.maxSlots,
+        tournamentType: parsed.data.tournamentType as TournamentType,
+        isFastCup: parsed.data.isFastCup,
         status: parsed.data.status as ScrimStatus,
         announcement: parsed.data.announcement || null,
         updatedAt: new Date(),
@@ -432,10 +466,10 @@ export async function updateScrimSession(
     revalidatePath(`/admin/scrims/${sessionId}`);
     revalidatePath("/");
 
-    return { success: true, message: "Scrim oturumu güncellendi" };
+    return { success: true, message: "Turnuva oturumu güncellendi" };
   } catch (error) {
     console.error("Update scrim session error:", error);
-    return { success: false, message: "Scrim oturumu güncellenemedi" };
+    return { success: false, message: "Turnuva oturumu güncellenemedi" };
   }
 }
 
@@ -450,10 +484,10 @@ export async function deleteScrimSession(sessionId: number): Promise<ActionRespo
     revalidatePath("/admin/scrims");
     revalidatePath("/");
 
-    return { success: true, message: "Scrim oturumu silindi" };
+    return { success: true, message: "Turnuva oturumu silindi" };
   } catch (error) {
     console.error("Delete scrim session error:", error);
-    return { success: false, message: "Scrim oturumu silinemedi" };
+    return { success: false, message: "Turnuva oturumu silinemedi" };
   }
 }
 
@@ -491,32 +525,28 @@ export async function setChampion(
 
 // Slot Management (Session Scoped)
 const addSlotSchema = z.object({
-  slotNumber: z.coerce.number().int().min(1).max(25),
-  teamName: z
+  slotNumber: z.coerce.number().int().min(1),
+  playerName: z
     .string()
     .min(2)
     .max(100)
     .refine((val) => !containsProfanity(val), {
-      message: "Takım adı uygunsuz içerik barındırıyor",
+      message: "Oyuncu adı uygunsuz içerik barındırıyor",
     }),
-  instagram: z
+  psnId: z
     .string()
-    .min(1)
+    .min(2)
     .max(100)
     .refine((val) => !containsProfanity(val), {
-      message: "Instagram kullanıcı adı uygunsuz içerik barındırıyor",
+      message: "PSN/Konami ID uygunsuz içerik barındırıyor",
     }),
-  playerNames: z
-    .array(
-      z
-        .string()
-        .min(2)
-        .max(50)
-        .refine((val) => !containsProfanity(val), {
-          message: "Oyuncu adı uygunsuz içerik barındırıyor",
-        })
-    )
-    .length(4),
+  teamSelection: z
+    .string()
+    .min(2)
+    .max(100)
+    .refine((val) => !containsProfanity(val), {
+      message: "Takım seçimi uygunsuz içerik barındırıyor",
+    }),
 });
 
 export async function getSessionSlots(sessionId: number) {
@@ -541,16 +571,23 @@ export async function addSlotManually(
   }
 
   try {
+    const session = await db
+      .select()
+      .from(scrimSessions)
+      .where(eq(scrimSessions.id, sessionId))
+      .limit(1);
+
+    if (session.length === 0) {
+      return { success: false, message: "Turnuva bulunamadı" };
+    }
+
+    const currentSession = session[0];
+
     const rawData = {
       slotNumber: formData.get("slotNumber"),
-      teamName: formData.get("teamName"),
-      instagram: formData.get("instagram"),
-      playerNames: [
-        formData.get("playerName1"),
-        formData.get("playerName2"),
-        formData.get("playerName3"),
-        formData.get("playerName4"),
-      ],
+      playerName: formData.get("playerName"),
+      psnId: formData.get("psnId"),
+      teamSelection: formData.get("teamSelection"),
     };
 
     const parsed = addSlotSchema.safeParse(rawData);
@@ -558,7 +595,14 @@ export async function addSlotManually(
       return { success: false, message: parsed.error.issues[0].message };
     }
 
-    const { slotNumber, teamName, instagram, playerNames } = parsed.data;
+    const { slotNumber, playerName, psnId, teamSelection } = parsed.data;
+
+    if (slotNumber > currentSession.maxSlots) {
+      return {
+        success: false,
+        message: `Bu turnuva için geçerli kontenjan aralığı 1-${currentSession.maxSlots}.`,
+      };
+    }
 
     const existingSlot = await db
       .select()
@@ -568,28 +612,31 @@ export async function addSlotManually(
 
     if (existingSlot.length > 0) {
       if (existingSlot[0].isLocked) {
-        return { success: false, message: `Slot #${slotNumber} kilitli` };
+        return { success: false, message: `Kontenjan #${slotNumber} kilitli` };
       }
-      return { success: false, message: `Slot #${slotNumber} zaten dolu` };
+      return { success: false, message: `Kontenjan #${slotNumber} zaten dolu` };
     }
 
     await db.insert(slots).values({
       sessionId,
       slotNumber,
-      teamName,
-      instagram: instagram.startsWith("@") ? instagram : `@${instagram}`,
+      playerName,
+      psnId,
+      teamSelection,
+      teamName: playerName,
+      instagram: null,
       ipAddress: "admin-added",
-      playerNames,
+      playerNames: [playerName],
       isLocked: false,
     });
 
     revalidatePath(`/admin/scrims/${sessionId}`);
     revalidatePath("/");
 
-    return { success: true, message: `Takım Slot #${slotNumber}'a eklendi` };
+    return { success: true, message: `Oyuncu kontenjan #${slotNumber}'a eklendi` };
   } catch (error) {
     console.error("Add slot error:", error);
-    return { success: false, message: "Takım eklenemedi" };
+    return { success: false, message: "Oyuncu eklenemedi" };
   }
 }
 
@@ -602,10 +649,10 @@ export async function deleteSlot(slotId: number): Promise<ActionResponse> {
     await db.delete(slots).where(eq(slots.id, slotId));
     revalidatePath("/admin/scrims");
     revalidatePath("/");
-    return { success: true, message: "Slot başarıyla silindi" };
+    return { success: true, message: "Kontenjan başarıyla silindi" };
   } catch (error) {
     console.error("Delete slot error:", error);
-    return { success: false, message: "Slot silinemedi" };
+    return { success: false, message: "Kontenjan silinemedi" };
   }
 }
 
@@ -618,6 +665,23 @@ export async function lockSlot(
   }
 
   try {
+    const session = await db
+      .select({ maxSlots: scrimSessions.maxSlots })
+      .from(scrimSessions)
+      .where(eq(scrimSessions.id, sessionId))
+      .limit(1);
+
+    if (session.length === 0) {
+      return { success: false, message: "Turnuva bulunamadı" };
+    }
+
+    if (slotNumber > session[0].maxSlots) {
+      return {
+        success: false,
+        message: `Bu turnuva için geçerli kontenjan aralığı 1-${session[0].maxSlots}.`,
+      };
+    }
+
     const existingSlot = await db
       .select()
       .from(slots)
@@ -625,7 +689,7 @@ export async function lockSlot(
       .limit(1);
 
     if (existingSlot.length > 0 && !existingSlot[0].isLocked) {
-      return { success: false, message: "Slot dolu, kilitlenemez" };
+      return { success: false, message: "Kontenjan dolu, kilitlenemez" };
     }
 
     if (existingSlot.length === 0) {
@@ -638,10 +702,10 @@ export async function lockSlot(
 
     revalidatePath(`/admin/scrims/${sessionId}`);
     revalidatePath("/");
-    return { success: true, message: `Slot #${slotNumber} kilitlendi` };
+    return { success: true, message: `Kontenjan #${slotNumber} kilitlendi` };
   } catch (error) {
     console.error("Lock slot error:", error);
-    return { success: false, message: "Slot kilitlenemedi" };
+    return { success: false, message: "Kontenjan kilitlenemedi" };
   }
 }
 
@@ -654,6 +718,23 @@ export async function unlockSlot(
   }
 
   try {
+    const session = await db
+      .select({ maxSlots: scrimSessions.maxSlots })
+      .from(scrimSessions)
+      .where(eq(scrimSessions.id, sessionId))
+      .limit(1);
+
+    if (session.length === 0) {
+      return { success: false, message: "Turnuva bulunamadı" };
+    }
+
+    if (slotNumber > session[0].maxSlots) {
+      return {
+        success: false,
+        message: `Bu turnuva için geçerli kontenjan aralığı 1-${session[0].maxSlots}.`,
+      };
+    }
+
     const existingSlot = await db
       .select()
       .from(slots)
@@ -661,21 +742,21 @@ export async function unlockSlot(
       .limit(1);
 
     if (existingSlot.length === 0) {
-      return { success: true, message: "Slot zaten açık" };
+      return { success: true, message: "Kontenjan zaten açık" };
     }
 
     if (!existingSlot[0].isLocked) {
-      return { success: false, message: "Slot dolu, açılamaz" };
+      return { success: false, message: "Kontenjan dolu, açılamaz" };
     }
 
     await db.delete(slots).where(eq(slots.id, existingSlot[0].id));
 
     revalidatePath(`/admin/scrims/${sessionId}`);
     revalidatePath("/");
-    return { success: true, message: `Slot #${slotNumber} açıldı` };
+    return { success: true, message: `Kontenjan #${slotNumber} açıldı` };
   } catch (error) {
     console.error("Unlock slot error:", error);
-    return { success: false, message: "Slot açılamadı" };
+    return { success: false, message: "Kontenjan açılamadı" };
   }
 }
 
@@ -765,7 +846,7 @@ const leaderboardEntrySchema = z.object({
     .min(2)
     .max(100)
     .refine((val) => !containsProfanity(val), {
-      message: "Takım adı uygunsuz içerik barındırıyor",
+      message: "Oyuncu adı uygunsuz içerik barındırıyor",
     }),
   points: z.coerce.number().int().min(0),
   wins: z.coerce.number().int().min(0),
@@ -1052,10 +1133,10 @@ export async function createLeaderboardEntry(
     if (meta?.isMain) {
       revalidatePath("/");
     }
-    return { success: true, message: "Takım başarıyla eklendi" };
+    return { success: true, message: "Oyuncu başarıyla eklendi" };
   } catch (error) {
     console.error("Create leaderboard entry error:", error);
-    return { success: false, message: "Takım eklenemedi" };
+    return { success: false, message: "Oyuncu eklenemedi" };
   }
 }
 
@@ -1108,10 +1189,10 @@ export async function updateLeaderboardEntry(
     if (meta?.isMain) {
       revalidatePath("/");
     }
-    return { success: true, message: "Takım güncellendi" };
+    return { success: true, message: "Oyuncu güncellendi" };
   } catch (error) {
     console.error("Update leaderboard entry error:", error);
-    return { success: false, message: "Takım güncellenemedi" };
+    return { success: false, message: "Oyuncu güncellenemedi" };
   }
 }
 
@@ -1138,10 +1219,10 @@ export async function deleteLeaderboardEntry(
     if (meta?.isMain) {
       revalidatePath("/");
     }
-    return { success: true, message: "Takım silindi" };
+    return { success: true, message: "Oyuncu silindi" };
   } catch (error) {
     console.error("Delete leaderboard entry error:", error);
-    return { success: false, message: "Takım silinemedi" };
+    return { success: false, message: "Oyuncu silinemedi" };
   }
 }
 

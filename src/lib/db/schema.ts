@@ -21,7 +21,8 @@ export {
 import type { RuleCard, PointSystemItem } from "./rules-types";
 
 export type ScrimStatus = "active" | "closed" | "completed";
-export type ScrimMode = "TPP" | "FPP";
+export type ScrimMode = "BO1" | "BO3";
+export type TournamentType = "ucl" | "uel" | "ukl" | "fast_cup" | "custom";
 export type LeaderboardStatus = "active" | "archived";
 
 // Settings table (singleton for app configuration)
@@ -47,6 +48,12 @@ export const scrimSessions = pgTable(
     startTime: timestamp("start_time").notNull(),
     mode: varchar("mode", { length: 10 }).$type<ScrimMode>().notNull(),
     mapName: text("map_name").notNull(),
+    maxSlots: integer("max_slots").notNull().default(32),
+    tournamentType: varchar("tournament_type", { length: 20 })
+      .$type<TournamentType>()
+      .notNull()
+      .default("custom"),
+    isFastCup: boolean("is_fast_cup").notNull().default(false),
     status: varchar("status", { length: 20 })
       .$type<ScrimStatus>()
       .notNull()
@@ -68,12 +75,18 @@ export const dailyScrimTemplates = pgTable("daily_scrim_templates", {
   startTime: varchar("start_time", { length: 5 }).notNull(),
   mode: varchar("mode", { length: 10 }).$type<ScrimMode>().notNull(),
   mapName: text("map_name").notNull(),
+  maxSlots: integer("max_slots").notNull().default(32),
+  tournamentType: varchar("tournament_type", { length: 20 })
+    .$type<TournamentType>()
+    .notNull()
+    .default("fast_cup"),
+  isFastCup: boolean("is_fast_cup").notNull().default(true),
   announcement: text("announcement"),
   isEnabled: boolean("is_enabled").notNull().default(true),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Slots table (25 slots for scrim registration)
+// Slots table (dynamic slot count per session)
 export const slots = pgTable(
   "slots",
   {
@@ -82,6 +95,9 @@ export const slots = pgTable(
       .notNull()
       .references(() => scrimSessions.id, { onDelete: "cascade" }),
     slotNumber: integer("slot_number").notNull(),
+    playerName: varchar("player_name", { length: 100 }),
+    psnId: varchar("psn_id", { length: 100 }),
+    teamSelection: varchar("team_selection", { length: 100 }),
     teamName: varchar("team_name", { length: 100 }),
     instagram: varchar("instagram", { length: 100 }),
     ipAddress: varchar("ip_address", { length: 45 }),

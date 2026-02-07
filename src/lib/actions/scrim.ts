@@ -4,40 +4,35 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db, slots, settings, scrimSessions, type ScrimSession } from "@/lib/db";
-import { eq, and, desc, asc, ne } from "drizzle-orm";
+import { eq, and, desc, asc, ne, gt, count } from "drizzle-orm";
 import { containsProfanity } from "@/lib/profanity";
 
 const registerSchema = z.object({
-  teamName: z
+  playerName: z
     .string()
-    .min(2, "Takım adı en az 2 karakter olmalıdır")
-    .max(100, "Takım adı 100 karakterden az olmalıdır")
+    .min(2, "Oyuncu adı en az 2 karakter olmalıdır")
+    .max(100, "Oyuncu adı 100 karakterden az olmalıdır")
     .refine((val) => !containsProfanity(val), {
-      message: "Takım adı uygunsuz içerik barındırıyor",
+      message: "Oyuncu adı uygunsuz içerik barındırıyor",
     }),
-  instagram: z
+  psnId: z
     .string()
-    .min(1, "Instagram kullanıcı adı gereklidir")
-    .max(100, "Instagram kullanıcı adı 100 karakterden az olmalıdır")
+    .min(2, "PSN/Konami ID en az 2 karakter olmalıdır")
+    .max(100, "PSN/Konami ID 100 karakterden az olmalıdır")
     .refine((val) => !containsProfanity(val), {
-      message: "Instagram kullanıcı adı uygunsuz içerik barındırıyor",
+      message: "PSN/Konami ID uygunsuz içerik barındırıyor",
+    }),
+  teamSelection: z
+    .string()
+    .min(2, "Takım seçimi en az 2 karakter olmalıdır")
+    .max(100, "Takım seçimi 100 karakterden az olmalıdır")
+    .refine((val) => !containsProfanity(val), {
+      message: "Takım seçimi uygunsuz içerik barındırıyor",
     }),
   slotNumber: z.coerce
     .number()
     .int()
-    .min(1, "Geçersiz slot numarası")
-    .max(25, "Geçersiz slot numarası"),
-  playerNames: z
-    .array(
-      z
-        .string()
-        .min(2, "Oyuncu adı en az 2 karakter olmalıdır")
-        .max(50, "Oyuncu adı 50 karakterden az olmalıdır")
-        .refine((val) => !containsProfanity(val), {
-          message: "Oyuncu adı uygunsuz içerik barındırıyor",
-        })
-    )
-    .length(4, "4 oyuncu adı girilmelidir"),
+    .min(1, "Geçersiz kontenjan numarası"),
 });
 
 export type ActionResponse = {
@@ -106,6 +101,29 @@ export async function getScrimSessionsForLanding(limit = 8) {
     .limit(limit);
 }
 
+export async function getUpcomingScrimSessions(limit = 8) {
+  return db
+    .select()
+    .from(scrimSessions)
+    .where(and(ne(scrimSessions.status, "completed"), gt(scrimSessions.startTime, new Date())))
+    .orderBy(asc(scrimSessions.startTime))
+    .limit(limit);
+}
+
+export async function getFastCupSessions(limit = 6) {
+  return db
+    .select()
+    .from(scrimSessions)
+    .where(
+      and(
+        ne(scrimSessions.status, "completed"),
+        eq(scrimSessions.isFastCup, true)
+      )
+    )
+    .orderBy(asc(scrimSessions.startTime))
+    .limit(limit);
+}
+
 export async function getScrimSessionsIndex() {
   return db
     .select()
@@ -146,7 +164,7 @@ export async function registerSlot(
       .limit(1);
 
     if (session.length === 0) {
-      return { success: false, message: "Seçilen maç bulunamadı." };
+      return { success: false, message: "Seçilen turnuva bulunamadı." };
     }
 
     const currentSession = session[0];
@@ -155,27 +173,22 @@ export async function registerSlot(
     if (currentSettings.isMaintenance) {
       return {
         success: false,
-        message: "Kayıt şu anda bakım için devre dışı bırakıldı.",
+        message: "Kayıt şu anda bakım nedeniyle devre dışı.",
       };
     }
 
     if (!isSessionOpen(currentSession)) {
       return {
         success: false,
-        message: "Kayıt şu anda kapalı. Lütfen daha sonra tekrar deneyin.",
+        message: "Kayıt henüz açılmadı. Lütfen başlangıç saatinde tekrar deneyin.",
       };
     }
 
     const rawData = {
-      teamName: formData.get("teamName"),
-      instagram: formData.get("instagram"),
+      playerName: formData.get("playerName"),
+      psnId: formData.get("psnId"),
+      teamSelection: formData.get("teamSelection"),
       slotNumber: formData.get("slotNumber"),
-      playerNames: [
-        formData.get("playerName1"),
-        formData.get("playerName2"),
-        formData.get("playerName3"),
-        formData.get("playerName4"),
-      ],
     };
 
     const parsed = registerSchema.safeParse(rawData);
@@ -186,19 +199,53 @@ export async function registerSlot(
       };
     }
 
-    const { teamName, instagram, slotNumber, playerNames } = parsed.data;
+    const { playerName, psnId, teamSelection, slotNumber } = parsed.data;
+
+    if (slotNumber > currentSession.maxSlots) {
+      return {
+        success: false,
+        message: `Bu turnuva için geçerli kontenjan aralığı 1-${currentSession.maxSlots}.`,
+      };
+    }
+
+    const filledCountResult = await db
+      .select({ value: count() })
+      .from(slots)
+      .where(and(eq(slots.sessionId, sessionId), eq(slots.isLocked, false)));
+
+    const filledCount = Number(filledCountResult[0]?.value || 0);
+    if (filledCount >= currentSession.maxSlots) {
+      return {
+        success: false,
+        message: "Turnuva kontenjanı doldu. Kayıtlar otomatik olarak kapatıldı.",
+      };
+    }
+
     const clientIP = await getClientIP();
 
-    const existingRegistration = await db
+    const existingIpRegistration = await db
       .select()
       .from(slots)
       .where(and(eq(slots.sessionId, sessionId), eq(slots.ipAddress, clientIP)))
       .limit(1);
 
-    if (existingRegistration.length > 0) {
+    if (existingIpRegistration.length > 0) {
       return {
         success: false,
-        message: "Bu maç için zaten bir takım kaydettiniz. IP başına oturum başına bir kayıt yapılabilir.",
+        message: "Bu turnuva için bu IP adresinden zaten kayıt yapılmış.",
+      };
+    }
+
+    const existingPsnRegistration = await db
+      .select()
+      .from(slots)
+      .where(and(eq(slots.sessionId, sessionId), eq(slots.psnId, psnId)))
+      .limit(1);
+
+    if (existingPsnRegistration.length > 0) {
+      return {
+        success: false,
+        message: "Bu PSN/Konami ID ile zaten kayıt mevcut.",
       };
     }
 
@@ -212,32 +259,37 @@ export async function registerSlot(
       if (existingSlot[0].isLocked) {
         return {
           success: false,
-          message: `Slot #${slotNumber} kilitli. Lütfen başka bir slot seçin.`,
+          message: `Kontenjan #${slotNumber} kilitli. Lütfen başka bir kontenjan seçin.`,
         };
       }
 
       return {
         success: false,
-        message: `Slot #${slotNumber} zaten dolu. Lütfen başka bir slot seçin.`,
+        message: `Kontenjan #${slotNumber} dolu. Lütfen başka bir kontenjan seçin.`,
       };
     }
 
     await db.insert(slots).values({
       sessionId,
       slotNumber,
-      teamName,
-      instagram: instagram.startsWith("@") ? instagram : `@${instagram}`,
+      playerName,
+      psnId,
+      teamSelection,
+      teamName: playerName,
+      instagram: null,
       ipAddress: clientIP,
-      playerNames,
+      playerNames: [playerName],
       isLocked: false,
     });
 
     revalidatePath("/");
+    revalidatePath("/fast-cup");
+    revalidatePath("/scrims");
     revalidatePath(`/scrims/${currentSession.slug}`);
 
     return {
       success: true,
-      message: `Slot #${slotNumber} için başarıyla kayıt oldunuz!`,
+      message: `Kontenjan #${slotNumber} için kaydınız başarıyla alındı!`,
     };
   } catch (error) {
     console.error("Registration error:", error);

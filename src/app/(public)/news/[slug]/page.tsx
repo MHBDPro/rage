@@ -114,10 +114,10 @@ export default async function NewsArticlePage({
         <Card variant="glass" className="mt-10">
           <div className="flex flex-col gap-3 text-sm text-white/70">
             <span className="text-xs uppercase tracking-[0.3em] text-primary/70">
-              Blog Nexus
+              Rage Duyuru Merkezi
             </span>
             <p>
-              Daha fazla guncelleme icin {"Blog Merkezi'ni"} takip edin ve yeni scrim duyurularini kacirmayin.
+              Daha fazla guncelleme icin {"Blog Merkezi'ni"} takip edin ve yeni turnuva duyurularini kacirmayin.
             </p>
           </div>
         </Card>

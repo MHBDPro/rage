@@ -1,18 +1,21 @@
 "use client";
 
-import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Trophy, Zap, Megaphone } from "lucide-react";
+import { Zap, Trophy, Clock3, ArrowRight, ShieldCheck } from "lucide-react";
 import { GoogleAdUnit } from "@/components/ads/google-ad-unit";
 import { ActiveScrimsCarousel } from "@/components/scrim/active-scrims-carousel";
 import { SponsorMarquee } from "@/components/sponsors/sponsor-marquee";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import type { ScrimSession, Sponsor } from "@/lib/db/schema";
 import { siteConfig } from "@/config/site";
 
 interface HomeContentProps {
-  sessions: ScrimSession[];
+  upcomingSessions: ScrimSession[];
+  fastCupSessions: ScrimSession[];
   champion: {
     teamName: string;
     points: number;
@@ -23,200 +26,233 @@ interface HomeContentProps {
   sponsors: Sponsor[];
 }
 
+function formatDate(value: Date) {
+  return value.toLocaleString("tr-TR", {
+    timeZone: "Europe/Istanbul",
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export function HomeContent({
-  sessions,
+  upcomingSessions,
+  fastCupSessions,
   champion,
   isMaintenance,
   announcement,
   sponsors,
 }: HomeContentProps) {
   const hasChampion = !!champion?.teamName;
-
-  // Champion Confetti Effect
-  React.useEffect(() => {
-    if (!hasChampion) return;
-    const fire = async () => {
-      const confetti = (await import("canvas-confetti")).default;
-      confetti({
-        particleCount: 150,
-        spread: 100,
-        origin: { y: 0.15 }, // Higher origin
-        colors: ["#00ff9d", "#ccff00", "#ffffff"], // Neon palette
-        disableForReducedMotion: true,
-      });
-    };
-    fire();
-  }, [hasChampion]);
+  const leagues = ["UCL", "UEL", "UKL"];
+  const nextSession = upcomingSessions[0] ?? null;
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden pb-20">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_10%,rgba(16,185,129,0.24),transparent_34%),radial-gradient(circle_at_84%_10%,rgba(249,115,22,0.22),transparent_32%),linear-gradient(180deg,#071018_0%,#06101a_46%,#050b14_100%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[360px] bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.14),transparent_58%)] opacity-50" />
+      <div className="pointer-events-none absolute left-1/2 top-[10%] h-[520px] w-[520px] -translate-x-1/2 rounded-full border border-accent/30 opacity-40 blur-2xl" />
+      <div className="pointer-events-none absolute left-1/2 top-[14%] h-[400px] w-[400px] -translate-x-1/2 rounded-full border border-primary/30 opacity-45 blur-2xl" />
+      <div className="pointer-events-none absolute bottom-0 left-1/2 h-56 w-[88%] -translate-x-1/2 rounded-full bg-primary/10 blur-[110px]" />
 
-      {/* Background Ambience */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-primary/10 blur-[120px] rounded-full pointer-events-none mix-blend-screen opacity-40" />
-
-      {/* HERO SECTION */}
-      <section className="relative pt-12 pb-24 md:pt-24 md:pb-32 px-4">
+      <section className="relative px-4 pb-20 pt-20 md:pb-28 md:pt-24">
         <div className="mx-auto max-w-7xl">
-          <div className="grid gap-16 lg:grid-cols-[1.2fr_0.8fr] items-center">
-
-            {/* LEFT: Typography & Actions */}
+          <div className="grid items-center gap-10 lg:grid-cols-[1.2fr_0.8fr]">
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10"
+              initial={{ opacity: 0, y: 28 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              className="space-y-7"
             >
-              {/* Eyebrow */}
-              <div className="flex items-center gap-3 mb-6">
-                <div className="h-px w-8 bg-primary/50" />
-                <span className="font-[family-name:var(--font-rajdhani)] text-sm font-bold uppercase tracking-[0.3em] text-primary">
+              <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2">
+                <span className="h-2 w-2 rounded-full bg-primary" />
+                <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">
                   {siteConfig.ui.landing.heroEyebrow}
                 </span>
               </div>
 
-              {/* Massive Glitch Title */}
-              <h1 className="text-6xl md:text-8xl font-black font-[family-name:var(--font-rajdhani)] uppercase leading-[0.9] tracking-tighter text-white mb-8">
-                <span className="block text-glitch" data-text={siteConfig.ui.landing.heroTitle.split(" ")[0]}>
-                  {siteConfig.ui.landing.heroTitle.split(" ")[0]}
-                </span>
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white to-white/40">
-                  {siteConfig.ui.landing.heroTitle.split(" ").slice(1).join(" ")}
-                </span>
-              </h1>
+              <div>
+                <h1 className="text-5xl font-black font-[family-name:var(--font-rajdhani)] uppercase leading-[0.92] tracking-tight text-white md:text-7xl">
+                  Rage
+                  <span className="block bg-gradient-to-r from-primary via-white to-accent bg-clip-text text-transparent">
+                    Federasyonu
+                  </span>
+                </h1>
+                <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
+                  {siteConfig.ui.landing.heroSubtitle}
+                </p>
+              </div>
 
-              <p className="text-lg md:text-xl text-muted-foreground max-w-xl mb-10 leading-relaxed border-l-2 border-primary/20 pl-6">
-                {siteConfig.ui.landing.heroSubtitle}
-              </p>
+              <div className="flex flex-wrap gap-2">
+                {leagues.map((league) => (
+                  <span
+                    key={league}
+                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs font-semibold tracking-[0.2em] text-white/80"
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                    {league}
+                  </span>
+                ))}
+              </div>
 
-              {/* CTAs */}
               <div className="flex flex-wrap gap-4">
                 <Link href="/scrims">
-                  <Button size="lg" className="h-16 px-8 text-lg clip-cut-corner bg-primary text-black hover:bg-white hover:text-black transition-colors duration-300">
-                    <Zap className="mr-2 h-5 w-5 fill-current" />
+                  <Button size="lg" className="h-14 px-7 text-base">
                     {siteConfig.ui.landing.viewScrims}
                   </Button>
                 </Link>
-                <Link href="/rules">
-                  <Button variant="outline" size="lg" className="h-16 px-8 text-lg border-white/20 text-white hover:bg-white/5">
-                    {siteConfig.ui.nav.rules}
+                <Link href="/fast-cup">
+                  <Button variant="outline" size="lg" className="h-14 px-7 text-base border-primary/30">
+                    <Zap className="mr-2 h-4 w-4" />
+                    {siteConfig.ui.landing.fastCupAction}
                   </Button>
                 </Link>
               </div>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                <Card variant="glass" className="border-white/10 bg-black/30 p-4">
+                  <p className="text-[10px] uppercase tracking-[0.24em] text-white/45">Sıradaki Turnuva</p>
+                  <p className="mt-1 text-sm font-semibold text-white">
+                    {nextSession ? formatDate(new Date(nextSession.startTime)) : "Planlama Bekleniyor"}
+                  </p>
+                </Card>
+                <Card variant="glass" className="border-white/10 bg-black/30 p-4">
+                  <p className="text-[10px] uppercase tracking-[0.24em] text-white/45">Resmi Ligler</p>
+                  <p className="mt-1 text-sm font-semibold text-white">UCL • UEL • UKL</p>
+                </Card>
+                <Card variant="glass" className="border-white/10 bg-black/30 p-4">
+                  <p className="text-[10px] uppercase tracking-[0.24em] text-white/45">Kontenjan Formatı</p>
+                  <p className="mt-1 text-sm font-semibold text-white">{siteConfig.platform.totalSlots} Oyuncu</p>
+                </Card>
+              </div>
             </motion.div>
 
-            {/* RIGHT: Floating 3D Card (Champion) */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: 50 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="relative hidden lg:block perspective-1000"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             >
-              {/* Floating Animation Wrapper */}
-              <div className="animate-[float_6s_ease-in-out_infinite] preserve-3d">
-                <div className="relative w-full aspect-[4/5] bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(var(--primary-rgb),0.15)] group">
+              <Card variant="glass" className="relative overflow-hidden border-white/15 bg-gradient-to-b from-black/45 to-black/20 p-8">
+                <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-accent/20 blur-3xl" />
+                <div className="pointer-events-none absolute -left-12 bottom-0 h-40 w-40 rounded-full bg-primary/20 blur-3xl" />
 
-                  {/* Decorative Grid on Card */}
-                  <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
-
-                  {/* Content */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-                    <div className="relative mb-6">
-                      <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse" />
-                      <Trophy className="relative h-24 w-24 text-primary drop-shadow-[0_0_15px_rgba(var(--primary-rgb),0.8)]" />
-                    </div>
-
-                    <div className="space-y-2">
-                      <span className="text-xs font-bold uppercase tracking-[0.4em] text-white/40">
-                        {siteConfig.ui.landing.championLabel}
-                      </span>
-                      {hasChampion ? (
-                        <>
-                          <h2 className="text-4xl font-black font-[family-name:var(--font-rajdhani)] uppercase text-white tracking-wide">
-                            {champion?.teamName}
-                          </h2>
-                          <p className="text-sm font-mono text-primary/80">
-                            {champion?.leaderboardTitle} {"//"} WINNER
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <h2 className="text-3xl font-bold font-[family-name:var(--font-rajdhani)] uppercase text-white/50">
-                            {siteConfig.ui.landing.championFallbackTitle}
-                          </h2>
-                          <p className="text-xs text-white/30 max-w-[200px] mx-auto mt-2">
-                            {siteConfig.ui.landing.championFallbackSubtitle}
-                          </p>
-                        </>
-                      )}
-                    </div>
+                <div className="relative mx-auto h-60 w-60">
+                  <div className="absolute inset-0 rounded-full border border-accent/55 shadow-[0_0_55px_rgba(249,115,22,0.24)]" />
+                  <div className="absolute inset-[18px] rounded-full border border-primary/60 shadow-[0_0_55px_rgba(16,185,129,0.25)]" />
+                  <div className="absolute inset-[32px] overflow-hidden rounded-full border border-white/10 bg-black/45">
+                    <Image
+                      src="/logo.jpg"
+                      alt="Rage Federasyonu logosu"
+                      fill
+                      className="object-cover"
+                      sizes="240px"
+                      priority
+                    />
                   </div>
-
-                  {/* Corner Accents */}
-                  <div className="absolute top-4 left-4 h-4 w-4 border-l-2 border-t-2 border-primary/50" />
-                  <div className="absolute bottom-4 right-4 h-4 w-4 border-r-2 border-b-2 border-primary/50" />
                 </div>
-              </div>
 
-              {/* Floor Reflection/Shadow */}
-              <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-[80%] h-4 bg-black/50 blur-xl rounded-[100%]" />
+                <div className="mt-7 rounded-2xl border border-white/10 bg-black/35 p-4">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.34em] text-white/50">
+                    {siteConfig.ui.landing.championLabel}
+                  </span>
+
+                  {hasChampion ? (
+                    <div className="mt-3 space-y-1.5">
+                      <h2 className="text-3xl font-black font-[family-name:var(--font-rajdhani)] uppercase tracking-wide text-white">
+                        {champion?.teamName}
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        {champion?.leaderboardTitle} • {champion?.points} Puan
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="mt-3 space-y-1.5">
+                      <h2 className="text-2xl font-bold font-[family-name:var(--font-rajdhani)] uppercase text-white/75">
+                        {siteConfig.ui.landing.championFallbackTitle}
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        {siteConfig.ui.landing.championFallbackSubtitle}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </Card>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* MARQUEE */}
       <SponsorMarquee sponsors={sponsors} />
 
-      {/* MAIN CONTENT AREA */}
-      <div className="mx-auto max-w-7xl px-4 mt-20">
+      <div className="mx-auto mt-16 max-w-7xl space-y-14 px-4">
+        {isMaintenance && (
+          <Card variant="default" className="border-yellow-500/30 bg-yellow-500/10 p-4 text-yellow-300">
+            Bakım modu aktif. Kayıtlar geçici olarak kapalıdır.
+          </Card>
+        )}
 
-        {/* Maintenance / Announcement Banners (Using new design) */}
-        <div className="space-y-4 mb-12">
-          {isMaintenance && (
-            <div className="flex items-center gap-4 border border-yellow-500/30 bg-yellow-500/5 p-4 rounded-lg animate-pulse">
-              <div className="h-2 w-2 rounded-full bg-yellow-500 shadow-[0_0_10px_orange]" />
-              <p className="font-mono text-sm text-yellow-500 uppercase tracking-widest">
-                System Status: Maintenance Mode Active
-              </p>
-            </div>
-          )}
+        {announcement && !isMaintenance && (
+          <Card variant="default" className="border-primary/30 bg-primary/10 p-4 text-primary">
+            {announcement}
+          </Card>
+        )}
 
-          {announcement && !isMaintenance && (
-            <div className="relative overflow-hidden rounded-lg border-l-4 border-primary bg-[#0f111a] p-6 shadow-lg">
-              <div className="flex items-start gap-4">
-                <Megaphone className="h-6 w-6 text-primary shrink-0 mt-1" />
-                <div>
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-primary/50 mb-1">System Broadcast</h3>
-                  <p className="text-white font-medium">{announcement}</p>
-                </div>
-              </div>
+        <div>
+          <h2 className="mb-5 text-3xl font-bold font-[family-name:var(--font-rajdhani)] uppercase text-white">
+            {siteConfig.ui.landing.fastCupTitle}
+          </h2>
+          <p className="mb-6 text-muted-foreground">{siteConfig.ui.landing.fastCupSubtitle}</p>
+
+          {fastCupSessions.length === 0 ? (
+            <Card variant="glass" className="p-6 text-sm text-muted-foreground">
+              Şu anda planlanan Fast Cup yok.
+            </Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-3">
+              {fastCupSessions.slice(0, 3).map((session) => (
+                <Card key={session.id} variant="glass" className="border-white/10 bg-gradient-to-b from-white/[0.06] to-transparent p-5">
+                  <div className="flex items-center justify-between">
+                    <Badge variant="warning">Fast Cup</Badge>
+                    <span className="text-xs text-muted-foreground">{session.mode}</span>
+                  </div>
+
+                  <h3 className="mt-4 text-xl font-bold font-[family-name:var(--font-rajdhani)] uppercase text-white">
+                    {session.title}
+                  </h3>
+
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    <Clock3 className="mr-1 inline h-4 w-4" />
+                    {formatDate(new Date(session.startTime))}
+                  </p>
+
+                  <Link href={`/scrims/${session.slug}`} className="mt-5 inline-flex items-center text-sm font-semibold text-primary">
+                    Hemen Katıl
+                    <ArrowRight className="ml-1 h-4 w-4" />
+                  </Link>
+                </Card>
+              ))}
             </div>
           )}
         </div>
 
-        {/* Ad Unit */}
-        <div className="mb-20">
-          <GoogleAdUnit />
-        </div>
-
-        {/* Active Scrims Section */}
-        <div id="scrims" className="relative">
-          <div className="flex items-end justify-between mb-8 border-b border-white/10 pb-4">
+        <div>
+          <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold font-[family-name:var(--font-rajdhani)] uppercase text-white">
-                <span className="text-primary mr-2">{"//"}</span>
+              <h2 className="text-3xl font-bold font-[family-name:var(--font-rajdhani)] uppercase text-white">
                 {siteConfig.ui.landing.activeScrimsTitle}
               </h2>
+              <p className="mt-2 text-muted-foreground">
+                {siteConfig.ui.landing.activeScrimsSubtitle}
+              </p>
             </div>
-            <div className="hidden md:flex gap-2">
-              <div className="h-2 w-2 bg-primary animate-pulse" />
-              <div className="h-2 w-2 bg-primary/50" />
-              <div className="h-2 w-2 bg-primary/20" />
-            </div>
+            <Trophy className="hidden h-8 w-8 text-primary/60 md:block" />
           </div>
 
-          <ActiveScrimsCarousel sessions={sessions} />
+          <ActiveScrimsCarousel sessions={upcomingSessions} />
         </div>
+
+        <GoogleAdUnit />
       </div>
     </div>
   );

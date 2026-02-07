@@ -220,9 +220,35 @@
 
   .grid-bg {
     background-image:
-      linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    background-size: 50px 50px;
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+
+  .grid-bg-animated {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(120deg, rgba(16, 185, 129, 0.06), rgba(249, 115, 22, 0.05));
+    background-size: 64px 64px, 64px 64px, 100% 100%;
+    animation: pitch-shift 16s linear infinite;
+  }
+
+  .gradient-text {
+    background-image: linear-gradient(90deg, #10b981 0%, #f8fafc 50%, #f97316 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .animate-float-delayed {
+    animation: float 7s ease-in-out infinite;
+    animation-delay: 0.8s;
+  }
+
+  .animate-float-slow {
+    animation: float 9s ease-in-out infinite;
+    animation-delay: 0.4s;
   }
 
   /* -- INTEL PROSE (Cyber Typography) -- */
@@ -320,6 +346,16 @@
 
   100% {
     transform: translateY(100%);
+  }
+}
+
+@keyframes pitch-shift {
+  0% {
+    background-position: 0 0, 0 0, 50% 0;
+  }
+
+  100% {
+    background-position: 64px 64px, 64px 64px, 50% 100%;
   }
 }
 

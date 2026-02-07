@@ -43,7 +43,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
   }, [isOpen]);
 
   const quickLinks = [
-    { href: "/scrims", label: siteConfig.content.scrimTermPlural, icon: Zap },
+    { href: "/fast-cup", label: "Fast Cup", icon: Zap },
     { href: "/login", label: siteConfig.ui.admin.login, icon: LogIn },
   ];
 
@@ -79,7 +79,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
         transition={sheetTransition}
         role="dialog"
         aria-modal="true"
-        aria-label="Mobile navigation"
+        aria-label="Mobil menü"
       >
         <div className="rounded-t-3xl border border-white/10 bg-[#0a0b14] shadow-[0_-20px_60px_rgba(0,0,0,0.6)]">
           <div className="flex items-center justify-between px-4 pt-4">
@@ -95,17 +95,17 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-white/40">
-                  Dynamic HUD
+                  Hızlı Menü
                 </p>
                 <p className="text-sm font-bold uppercase tracking-wider text-primary">
-                  {siteConfig.brand.name}
+                  {siteConfig.brand.fullName}
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
               className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:text-white"
-              aria-label="Close navigation menu"
+              aria-label="Menüyü kapat"
             >
               <X className="h-5 w-5" />
             </button>

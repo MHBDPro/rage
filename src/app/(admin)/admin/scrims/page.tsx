@@ -34,7 +34,6 @@ import {
 } from "@/lib/actions/admin";
 import type { ScrimSession } from "@/lib/db/schema";
 import { formatIstanbulDateTimeInput } from "@/lib/utils";
-import { siteConfig } from "@/config/site";
 
 function SubmitButton({ children }: { children: React.ReactNode }) {
   const { pending } = useFormStatus();
@@ -46,10 +45,25 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
 }
 
 const statusBadge = {
-  active: { variant: "success" as const, label: siteConfig.ui.landing.statusActive },
-  closed: { variant: "warning" as const, label: siteConfig.ui.landing.statusClosed },
-  completed: { variant: "secondary" as const, label: siteConfig.ui.landing.statusCompleted },
+  active: { variant: "success" as const, label: "Canlı" },
+  closed: { variant: "warning" as const, label: "Yaklaşan" },
+  completed: { variant: "secondary" as const, label: "Bitti" },
 };
+
+function tournamentTypeLabel(type: string) {
+  switch (type) {
+    case "ucl":
+      return "UCL";
+    case "uel":
+      return "UEL";
+    case "ukl":
+      return "UKL";
+    case "fast_cup":
+      return "Fast Cup";
+    default:
+      return "Özel";
+  }
+}
 
 export default function ScrimsPage() {
   const [sessions, setSessions] = React.useState<ScrimSession[]>([]);
@@ -115,7 +129,7 @@ export default function ScrimsPage() {
   };
 
   const handleDelete = async (sessionId: number) => {
-    if (!confirm("Bu scrim oturumunu silmek istediğinizden emin misiniz?")) return;
+    if (!confirm("Bu turnuva oturumunu silmek istediğinizden emin misiniz?")) return;
     const result = await deleteScrimSession(sessionId);
     if (result.success) {
       toast.success(result.message);
@@ -133,14 +147,13 @@ export default function ScrimsPage() {
   return (
     <div className="min-h-screen py-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold font-[family-name:var(--font-rajdhani)] uppercase tracking-wider">
-              Scrim Oturumları
+              Turnuva Oturumları
             </h1>
             <p className="text-muted-foreground">
-              Tüm scrim oturumlarını yönetin ve detay sayfalarına gidin
+              UCL, UEL, UKL ve Fast Cup oturumlarını yönetin.
             </p>
           </div>
           <Button onClick={() => setAddModalOpen(true)}>
@@ -149,7 +162,6 @@ export default function ScrimsPage() {
           </Button>
         </div>
 
-        {/* Sessions Table */}
         <Card variant="glass">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -165,32 +177,19 @@ export default function ScrimsPage() {
                 ))}
               </div>
             ) : sessions.length === 0 ? (
-              <p className="py-8 text-center text-muted-foreground">
-                Henüz scrim oturumu yok
-              </p>
+              <p className="py-8 text-center text-muted-foreground">Henüz turnuva oturumu yok.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">
-                        Başlık
-                      </th>
-                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">
-                        Başlangıç
-                      </th>
-                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">
-                        Mod / Harita
-                      </th>
-                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">
-                        Durum
-                      </th>
-                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">
-                        Şampiyon
-                      </th>
-                      <th className="pb-3 text-right text-xs font-semibold uppercase text-muted-foreground">
-                        İşlemler
-                      </th>
+                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">Başlık</th>
+                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">Başlangıç</th>
+                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">Lig / Format</th>
+                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">Kontenjan</th>
+                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">Durum</th>
+                      <th className="pb-3 text-left text-xs font-semibold uppercase text-muted-foreground">Lider</th>
+                      <th className="pb-3 text-right text-xs font-semibold uppercase text-muted-foreground">İşlemler</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -214,9 +213,10 @@ export default function ScrimsPage() {
                         <td className="py-3">
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Swords className="h-4 w-4 text-primary" />
-                            {session.mode} • {session.mapName}
+                            {tournamentTypeLabel(session.tournamentType)} • {session.mode} • {session.mapName}
                           </div>
                         </td>
+                        <td className="py-3 text-sm text-muted-foreground">{session.maxSlots}</td>
                         <td className="py-3">
                           {(() => {
                             const effectiveStatus = getEffectiveStatus(session);
@@ -245,18 +245,10 @@ export default function ScrimsPage() {
                                 <ArrowRight className="ml-2 h-4 w-4" />
                               </Button>
                             </Link>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openEditModal(session)}
-                            >
+                            <Button variant="ghost" size="sm" onClick={() => openEditModal(session)}>
                               <Pencil className="h-4 w-4" />
                             </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDelete(session.id)}
-                            >
+                            <Button variant="destructive" size="sm" onClick={() => handleDelete(session.id)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
@@ -271,37 +263,64 @@ export default function ScrimsPage() {
         </Card>
       </div>
 
-      {/* Add Session Modal */}
       <Modal isOpen={addModalOpen} onClose={() => setAddModalOpen(false)}>
         <ModalHeader>
-          <ModalTitle>Yeni Scrim Oturumu</ModalTitle>
-          <ModalDescription>Yeni bir scrim oturumu oluşturun</ModalDescription>
+          <ModalTitle>Yeni Turnuva Oturumu</ModalTitle>
+          <ModalDescription>Yeni bir turnuva oturumu oluşturun.</ModalDescription>
         </ModalHeader>
         <form action={handleAdd}>
           <ModalBody className="space-y-4">
             <Input name="title" placeholder="Oturum başlığı" required />
             <Input name="slug" placeholder="Slug (isteğe bağlı)" />
             <Input type="datetime-local" name="startTime" required />
+
             <div className="grid grid-cols-2 gap-3">
               <select
                 name="mode"
                 className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                defaultValue="TPP"
+                defaultValue="BO1"
               >
-                <option value="TPP">TPP</option>
-                <option value="FPP">FPP</option>
+                <option value="BO1">BO1</option>
+                <option value="BO3">BO3</option>
               </select>
               <select
                 name="status"
                 className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm focus:border-primary focus:outline-none"
                 defaultValue="closed"
               >
-                <option value="active">Aktif</option>
-                <option value="closed">Yakında</option>
-                <option value="completed">Tamamlandı</option>
+                <option value="active">Canlı</option>
+                <option value="closed">Yaklaşan</option>
+                <option value="completed">Bitti</option>
               </select>
             </div>
-            <Input name="mapName" placeholder="Harita adı" required />
+
+            <div className="grid grid-cols-2 gap-3">
+              <select
+                name="tournamentType"
+                className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                defaultValue="custom"
+              >
+                <option value="ucl">UCL</option>
+                <option value="uel">UEL</option>
+                <option value="ukl">UKL</option>
+                <option value="fast_cup">Fast Cup</option>
+                <option value="custom">Özel</option>
+              </select>
+              <Input name="mapName" placeholder="Lig etiketi (Örn: Grup A)" required />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Input type="number" name="maxSlots" min={2} max={128} defaultValue={32} required />
+              <select
+                name="isFastCup"
+                className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                defaultValue="false"
+              >
+                <option value="false">Standart</option>
+                <option value="true">Fast Cup</option>
+              </select>
+            </div>
+
             <textarea
               name="announcement"
               placeholder="Oturum duyurusu (isteğe bağlı)"
@@ -319,11 +338,10 @@ export default function ScrimsPage() {
         </form>
       </Modal>
 
-      {/* Edit Session Modal */}
       <Modal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)}>
         <ModalHeader>
           <ModalTitle>Oturumu Düzenle</ModalTitle>
-          <ModalDescription>Scrim oturum detaylarını güncelleyin</ModalDescription>
+          <ModalDescription>Turnuva oturum detaylarını güncelleyin.</ModalDescription>
         </ModalHeader>
         {selectedSession && (
           <form action={handleEdit}>
@@ -336,26 +354,61 @@ export default function ScrimsPage() {
                 defaultValue={formatIstanbulDateTimeInput(new Date(selectedSession.startTime))}
                 required
               />
+
               <div className="grid grid-cols-2 gap-3">
                 <select
                   name="mode"
                   className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm focus:border-primary focus:outline-none"
                   defaultValue={selectedSession.mode}
                 >
-                  <option value="TPP">TPP</option>
-                  <option value="FPP">FPP</option>
+                  <option value="BO1">BO1</option>
+                  <option value="BO3">BO3</option>
                 </select>
                 <select
                   name="status"
                   className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm focus:border-primary focus:outline-none"
                   defaultValue={selectedSession.status}
                 >
-                  <option value="active">Aktif</option>
-                  <option value="closed">Yakında</option>
-                  <option value="completed">Tamamlandı</option>
+                  <option value="active">Canlı</option>
+                  <option value="closed">Yaklaşan</option>
+                  <option value="completed">Bitti</option>
                 </select>
               </div>
-              <Input name="mapName" defaultValue={selectedSession.mapName} required />
+
+              <div className="grid grid-cols-2 gap-3">
+                <select
+                  name="tournamentType"
+                  className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  defaultValue={selectedSession.tournamentType}
+                >
+                  <option value="ucl">UCL</option>
+                  <option value="uel">UEL</option>
+                  <option value="ukl">UKL</option>
+                  <option value="fast_cup">Fast Cup</option>
+                  <option value="custom">Özel</option>
+                </select>
+                <Input name="mapName" defaultValue={selectedSession.mapName} required />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  type="number"
+                  name="maxSlots"
+                  min={2}
+                  max={128}
+                  defaultValue={selectedSession.maxSlots}
+                  required
+                />
+                <select
+                  name="isFastCup"
+                  className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                  defaultValue={selectedSession.isFastCup ? "true" : "false"}
+                >
+                  <option value="false">Standart</option>
+                  <option value="true">Fast Cup</option>
+                </select>
+              </div>
+
               <textarea
                 name="announcement"
                 defaultValue={selectedSession.announcement || ""}
