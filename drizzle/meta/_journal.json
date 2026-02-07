@@ -1,0 +1,69 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1765019517632,
+      "tag": "0000_elite_mister_sinister",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1765896737276,
+      "tag": "0001_nasty_stephen_strange",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1766170732769,
+      "tag": "0002_wonderful_rafael_vega",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1769934541047,
+      "tag": "0003_multi_session_scrims",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1769936971872,
+      "tag": "0004_slot_player_names",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1769937419973,
+      "tag": "0005_scrim_session_announcement",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1769939033101,
+      "tag": "0006_daily_scrim_template",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1769940290284,
+      "tag": "0007_multi_daily_scrim_templates",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1769967180556,
+      "tag": "0008_calm_tattoo",
+      "breakpoints": true
+    }
+  ]
+}
