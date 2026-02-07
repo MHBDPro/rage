@@ -64,6 +64,13 @@
       "when": 1769967180556,
       "tag": "0008_calm_tattoo",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1770471038402,
+      "tag": "0009_multi_leaderboards",
+      "breakpoints": true
     }
   ]
 }
