@@ -56,7 +56,7 @@ export function HomeContent({
       <div className="pointer-events-none absolute left-1/2 top-[14%] h-[400px] w-[400px] -translate-x-1/2 rounded-full border border-primary/30 opacity-45 blur-2xl" />
       <div className="pointer-events-none absolute bottom-0 left-1/2 h-56 w-[88%] -translate-x-1/2 rounded-full bg-primary/10 blur-[110px]" />
 
-      <section className="relative px-4 pb-20 pt-20 md:pb-28 md:pt-24">
+      <section className="relative px-4 pb-20 pt-4 md:pb-28 md:pt-4">
         <div className="mx-auto max-w-7xl">
           <div className="grid items-center gap-10 lg:grid-cols-[1.2fr_0.8fr]">
             <motion.div

@@ -19,7 +19,7 @@ export default async function FastCupPage() {
   const sessions = await getFastCupSessions(24);
 
   return (
-    <div className="relative min-h-screen overflow-hidden py-16">
+    <div className="relative min-h-screen overflow-hidden pt-4 pb-16">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_12%,rgba(16,185,129,0.15),transparent_30%),radial-gradient(circle_at_84%_10%,rgba(249,115,22,0.16),transparent_30%)]" />
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="relative mb-10 overflow-hidden rounded-3xl border border-white/10 bg-black/30 p-8 text-center shadow-[0_20px_80px_rgba(0,0,0,0.35)]">

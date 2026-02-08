@@ -145,7 +145,7 @@ async function RulesContent() {
 
 export default function RulesPage() {
   return (
-    <div className="min-h-screen py-16">
+    <div className="min-h-screen pt-4 pb-16">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-12 text-center">

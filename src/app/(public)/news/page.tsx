@@ -17,7 +17,7 @@ export default async function NewsPage() {
   const [titleLead, ...titleRest] = siteConfig.ui.news.title.split(" ");
 
   return (
-    <div className="min-h-screen py-16">
+    <div className="min-h-screen pt-4 pb-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-12 text-center">
