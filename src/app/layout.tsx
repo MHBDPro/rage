@@ -29,6 +29,13 @@ const rajdhani = Rajdhani({
 });
 
 // Metadata from site config
+export const viewport = {
+  themeColor: "#071018",
+  viewportFit: "cover" as const,
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata: Metadata = {
   title: {
     default: siteConfig.seo.defaultTitle,
