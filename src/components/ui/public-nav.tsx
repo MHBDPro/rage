@@ -84,7 +84,7 @@ export function PublicNav() {
         and a slightly richer entrance on desktop.
       */}
       <motion.nav
-        className="pointer-events-none fixed left-0 right-0 z-50 mx-auto flex justify-center px-4 [top:calc(env(safe-area-inset-top)+2.5rem)] md:top-4"
+        className="pointer-events-none fixed left-0 right-0 z-50 mx-auto flex justify-center px-4 [top:calc(env(safe-area-inset-top)+3.5rem)] md:top-4"
         style={{ willChange: "opacity" }}
         initial={navInitial}
         animate={navAnimate}

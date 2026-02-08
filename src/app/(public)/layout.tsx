@@ -28,7 +28,7 @@ export default function PublicLayout({
         {/* Floating Island Navigation */}
         <PublicNav />
 
-        <main className="pt-24 md:pt-20">{children}</main>
+        <main className="pt-28 md:pt-20">{children}</main>
 
         <footer className="relative w-full overflow-hidden border-t border-white/10 bg-[#05080d]">
           <div className="pointer-events-none absolute inset-0">

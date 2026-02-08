@@ -95,7 +95,7 @@ export default function RootLayout({
         <ThemeStyles />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${rajdhani.variable} min-h-screen bg-background text-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable} ${rajdhani.variable} min-h-screen bg-[#071018] text-foreground`}
       >
         <OrganizationSchema />
         <SmoothScroll />
