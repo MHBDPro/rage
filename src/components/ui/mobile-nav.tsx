@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { X, Zap, LogIn } from "lucide-react";
-import { motion, useReducedMotion, type Transition } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/config/site";
 import { getIcon } from "@/lib/icons";
@@ -17,7 +16,6 @@ interface MobileNavProps {
 
 export function MobileNav({ isOpen, onClose }: MobileNavProps) {
   const pathname = usePathname();
-  const reduceMotion = useReducedMotion();
 
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -47,41 +45,27 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
     { href: "/login", label: siteConfig.ui.admin.login, icon: LogIn },
   ];
 
-  const overlayTransition: Transition = reduceMotion
-    ? { duration: 0 }
-    : { duration: 0.18, ease: [0.16, 1, 0.3, 1] };
-  const sheetTransition: Transition = reduceMotion
-    ? { duration: 0 }
-    : { duration: 0.22, ease: [0.16, 1, 0.3, 1] };
-
   return (
     <>
-      <motion.div
+      <div
         className={cn(
-          "fixed inset-0 z-[55] bg-black/70 backdrop-blur-none md:backdrop-blur-sm",
-          isOpen ? "pointer-events-auto" : "pointer-events-none"
+          "fixed inset-0 z-[55] bg-black/70 transition-opacity duration-200 ease-out motion-reduce:transition-none",
+          isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         )}
-        initial={false}
-        animate={{ opacity: isOpen ? 1 : 0 }}
-        transition={overlayTransition}
         onClick={onClose}
         aria-hidden={!isOpen}
       />
 
-      <motion.div
+      <div
         className={cn(
-          "fixed inset-x-0 bottom-0 z-[60] mx-auto w-full max-w-md px-4 pb-4 transform-gpu",
-          isOpen ? "pointer-events-auto" : "pointer-events-none"
+          "fixed inset-x-0 bottom-0 z-[60] mx-auto w-full max-w-md px-4 pb-4 transition-transform duration-200 ease-out motion-reduce:transition-none",
+          isOpen ? "pointer-events-auto translate-y-0" : "pointer-events-none translate-y-full"
         )}
-        style={{ willChange: "transform" }}
-        initial={false}
-        animate={{ y: isOpen ? 0 : "100%" }}
-        transition={sheetTransition}
         role="dialog"
         aria-modal="true"
         aria-label="Mobil menü"
       >
-        <div className="rounded-t-3xl border border-white/10 bg-[#0a0b14] shadow-[0_-20px_60px_rgba(0,0,0,0.6)]">
+        <div className="rounded-t-3xl border border-white/10 bg-[#0a0b14] shadow-[0_-14px_42px_rgba(0,0,0,0.48)]">
           <div className="flex items-center justify-between px-4 pt-4">
             <div className="flex items-center gap-3">
               <div className="relative h-9 w-9 overflow-hidden rounded-lg border border-primary/30 bg-primary/10">
@@ -125,7 +109,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                     className={cn(
                       "flex min-h-[52px] items-center gap-3 rounded-2xl border border-white/5 bg-black/40 px-4 text-sm font-semibold uppercase tracking-wider transition",
                       isActive
-                        ? "border-primary/50 text-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.25)]"
+                        ? "border-primary/50 text-primary shadow-[0_0_14px_rgba(var(--primary-rgb),0.2)]"
                         : "text-white/70 hover:border-primary/30 hover:text-white"
                     )}
                   >
@@ -156,7 +140,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </>
   );
 }

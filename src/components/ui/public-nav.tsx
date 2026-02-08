@@ -1,33 +1,47 @@
 "use client";
 
 import * as React from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
-import { motion, useScroll, useMotionValueEvent, useReducedMotion, type Transition } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { MobileNav } from "./mobile-nav";
 import { siteConfig } from "@/config/site";
 import { getIcon } from "@/lib/icons";
+
+const MobileNav = dynamic(
+  () => import("./mobile-nav").then((module) => module.MobileNav),
+  { ssr: false }
+);
 
 export function PublicNav() {
   const pathname = usePathname();
   const [isMobileNavOpen, setIsMobileNavOpen] = React.useState(false);
-  const { scrollY } = useScroll();
   const [isCompact, setIsCompact] = React.useState(false);
-  const reduceMotion = useReducedMotion();
   const [isMobile, setIsMobile] = React.useState(false);
-  const isMobileRef = React.useRef(false);
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  const compactRef = React.useRef(false);
   const lastScrollY = React.useRef(0);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   React.useEffect(() => {
     const media = window.matchMedia("(max-width: 768px)");
     const handleChange = () => {
-      setIsMobile(media.matches);
+      const mobile = media.matches;
+      setIsMobile(mobile);
+      if (mobile) {
+        compactRef.current = false;
+        setIsCompact(false);
+      }
     };
 
     handleChange();
+
     if (media.addEventListener) {
       media.addEventListener("change", handleChange);
       return () => media.removeEventListener("change", handleChange);
@@ -38,71 +52,73 @@ export function PublicNav() {
   }, []);
 
   React.useEffect(() => {
-    isMobileRef.current = isMobile;
-  }, [isMobile]);
-
-  // Scroll-aware HUD behavior
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    if (isMobileRef.current) {
+    if (isMobile) {
       return;
     }
-    const prev = lastScrollY.current;
-    const delta = latest - prev;
-    lastScrollY.current = latest;
 
-    setIsCompact((current) => {
+    const handleScroll = () => {
+      const latest = window.scrollY;
+      const prev = lastScrollY.current;
+      const delta = latest - prev;
+      lastScrollY.current = latest;
+
       if (latest < 12) {
-        return false;
+        if (compactRef.current) {
+          compactRef.current = false;
+          setIsCompact(false);
+        }
+        return;
       }
 
-      if (delta > 8) {
-        return true;
+      if (delta > 8 && !compactRef.current) {
+        compactRef.current = true;
+        setIsCompact(true);
+        return;
       }
-      if (delta < -8) {
-        return false;
+
+      if (delta < -8 && compactRef.current) {
+        compactRef.current = false;
+        setIsCompact(false);
       }
-      return current;
-    });
-  });
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [isMobile]);
 
   const isMicroHud = isMobile ? true : isCompact;
-  const navInitial = reduceMotion
-    ? false
-    : isMobile
-      ? { opacity: 0 }
-      : { y: -40, opacity: 0 };
-  const navAnimate = isMobile ? { opacity: 1 } : { y: 0, opacity: 1 };
-  const navTransition: Transition =
-    reduceMotion || isMobile
-      ? { duration: reduceMotion ? 0 : 0.22, ease: [0.16, 1, 0.3, 1] }
-      : { type: "tween", duration: 0.35, ease: [0.16, 1, 0.3, 1] };
+  const navAnimateClass = isMobile
+    ? isMounted
+      ? "opacity-100"
+      : "opacity-0"
+    : isMounted
+      ? "translate-y-0 opacity-100"
+      : "-translate-y-10 opacity-0";
 
   return (
     <>
-      {/*
-        Keep a lightweight fade on mobile to avoid jank,
-        and a slightly richer entrance on desktop.
-      */}
-      <motion.nav
-        className="pointer-events-none fixed left-0 right-0 z-50 mx-auto flex justify-center px-4 [top:calc(env(safe-area-inset-top)+3.5rem)] md:top-4"
-        style={{ willChange: "opacity" }}
-        initial={navInitial}
-        animate={navAnimate}
-        transition={navTransition}
+      <nav
+        className={cn(
+          "pointer-events-none fixed left-0 right-0 z-50 mx-auto flex justify-center px-4 [top:calc(env(safe-area-inset-top)+3.5rem)] transition duration-300 ease-out motion-reduce:transition-none md:top-4",
+          navAnimateClass
+        )}
       >
-        <motion.div
+        <div
           className={cn(
-            "pointer-events-auto flex items-center justify-between rounded-2xl border border-white/10 bg-[#070b12]/92 shadow-[0_10px_40px_rgba(0,0,0,0.45)] transition-[max-width,padding] duration-300 ease-out backdrop-blur-none md:backdrop-blur-xl",
+            "pointer-events-auto flex items-center justify-between rounded-2xl border border-white/10 bg-[#070b12]/92 shadow-[0_8px_28px_rgba(0,0,0,0.38)] transition-[max-width,padding,background-color,border-color,box-shadow] duration-300 ease-out backdrop-blur-none md:backdrop-blur-md",
             isMicroHud
               ? "w-full max-w-[360px] gap-3 px-3 py-2"
               : "w-full max-w-5xl px-5 py-3"
           )}
         >
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <motion.div
+          <Link href="/" className="group flex items-center gap-3">
+            <div
               className={cn(
-                "relative overflow-hidden rounded-lg border border-primary/45 bg-black/45 shadow-[0_0_24px_rgba(16,185,129,0.2)] transition-colors group-hover:border-primary/70",
+                "relative overflow-hidden rounded-lg border border-primary/45 bg-black/45 shadow-[0_0_18px_rgba(16,185,129,0.16)] transition-colors group-hover:border-primary/70",
                 isMicroHud ? "h-8 w-8" : "h-9 w-9"
               )}
             >
@@ -114,9 +130,9 @@ export function PublicNav() {
                 priority
                 sizes="40px"
               />
-            </motion.div>
+            </div>
 
-            <motion.div className={cn("flex flex-col", isMicroHud && "hidden sm:flex")}>
+            <div className={cn("flex flex-col", isMicroHud && "hidden sm:flex")}> 
               <span className="font-[family-name:var(--font-rajdhani)] text-base font-bold uppercase leading-none tracking-wider text-white">
                 {siteConfig.brand.fullName}
               </span>
@@ -125,10 +141,9 @@ export function PublicNav() {
                   {siteConfig.brand.tagline}
                 </span>
               )}
-            </motion.div>
+            </div>
           </Link>
 
-          {/* Desktop Navigation */}
           {!isMicroHud && (
             <div className="hidden items-center gap-1 md:flex">
               {siteConfig.navigation.public.map((item) => {
@@ -139,18 +154,19 @@ export function PublicNav() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="relative px-3 py-1.5 group"
+                    className="group relative px-3 py-1.5"
                   >
-                    {isActive && (
-                      <motion.div
-                        layoutId="nav-pill"
-                        className="absolute inset-0 rounded-lg bg-primary/10 border border-primary/20"
-                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                      />
-                    )}
                     <span
                       className={cn(
-                        "relative z-10 flex items-center gap-2 text-sm font-medium transition-colors font-[family-name:var(--font-rajdhani)] uppercase tracking-wide",
+                        "absolute inset-0 rounded-lg border transition-colors",
+                        isActive
+                          ? "border-primary/20 bg-primary/10"
+                          : "border-transparent group-hover:border-white/10"
+                      )}
+                    />
+                    <span
+                      className={cn(
+                        "relative z-10 flex items-center gap-2 font-[family-name:var(--font-rajdhani)] text-sm font-medium uppercase tracking-wide transition-colors",
                         isActive ? "text-primary" : "text-gray-400 group-hover:text-white"
                       )}
                     >
@@ -163,7 +179,6 @@ export function PublicNav() {
             </div>
           )}
 
-          {/* Mobile Toggle */}
           <button
             onClick={() => setIsMobileNavOpen(true)}
             className={cn(
@@ -174,13 +189,15 @@ export function PublicNav() {
           >
             <Menu className="h-5 w-5" />
           </button>
-        </motion.div>
-      </motion.nav>
+        </div>
+      </nav>
 
-      <MobileNav
-        isOpen={isMobileNavOpen}
-        onClose={() => setIsMobileNavOpen(false)}
-      />
+      {isMobileNavOpen ? (
+        <MobileNav
+          isOpen={isMobileNavOpen}
+          onClose={() => setIsMobileNavOpen(false)}
+        />
+      ) : null}
     </>
   );
 }
