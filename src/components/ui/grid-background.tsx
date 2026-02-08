@@ -14,7 +14,7 @@ export function GridBackground({
   return (
     <div
       className={cn(
-        "relative min-h-screen w-full overflow-hidden bg-[#071018] [contain:layout_paint_style]",
+        "relative min-h-screen w-full overflow-hidden bg-[#071018] [contain:style]",
         animated ? "grid-bg-animated" : "grid-bg",
         className
       )}
