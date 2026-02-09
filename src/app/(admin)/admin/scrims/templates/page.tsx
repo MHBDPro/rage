@@ -26,6 +26,21 @@ import {
 } from "@/lib/actions/admin";
 import type { DailyScrimTemplate } from "@/lib/db/schema";
 
+function isPubgRange(value: number) {
+  return value >= 20 && value <= 28;
+}
+
+function PubgWarning({ value }: { value: number }) {
+  if (!isPubgRange(value)) return null;
+  return (
+    <div className="rounded-lg border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-400 backdrop-blur-sm">
+      <span className="font-bold">⚠️ Bu site PUBG scrim açmak için kullanılamaz.</span>
+      <br />
+      <span className="text-xs text-red-400/70">20-28 arası kontenjan sayısı bu platformda desteklenmemektedir.</span>
+    </div>
+  );
+}
+
 function SubmitButton({ children }: { children: React.ReactNode }) {
   const { pending } = useFormStatus();
   return (
@@ -56,6 +71,8 @@ export default function DailyScrimTemplatesPage() {
   const [addModalOpen, setAddModalOpen] = React.useState(false);
   const [editModalOpen, setEditModalOpen] = React.useState(false);
   const [selectedTemplate, setSelectedTemplate] = React.useState<DailyScrimTemplate | null>(null);
+  const [addMaxSlots, setAddMaxSlots] = React.useState(32);
+  const [editMaxSlots, setEditMaxSlots] = React.useState(32);
   const searchParams = useSearchParams();
 
   const loadTemplates = React.useCallback(async () => {
@@ -199,6 +216,7 @@ export default function DailyScrimTemplatesPage() {
                               size="sm"
                               onClick={() => {
                                 setSelectedTemplate(template);
+                                setEditMaxSlots(template.maxSlots);
                                 setEditModalOpen(true);
                               }}
                             >
@@ -255,8 +273,10 @@ export default function DailyScrimTemplatesPage() {
                 <option value="fast_cup">Fast Cup</option>
                 <option value="custom">Özel</option>
               </select>
-              <Input type="number" name="maxSlots" min={2} max={128} defaultValue={32} required />
+              <Input type="number" name="maxSlots" min={2} max={128} value={addMaxSlots} onChange={(e) => setAddMaxSlots(Number(e.target.value))} required />
             </div>
+
+            <PubgWarning value={addMaxSlots} />
 
             <div className="grid gap-3 sm:grid-cols-2">
               <select
@@ -289,7 +309,7 @@ export default function DailyScrimTemplatesPage() {
             <Button type="button" variant="outline" onClick={() => setAddModalOpen(false)}>
               İptal
             </Button>
-            <SubmitButton>Oluştur</SubmitButton>
+            <SubmitButton>{isPubgRange(addMaxSlots) ? "Engellendi" : "Oluştur"}</SubmitButton>
           </ModalFooter>
         </form>
       </Modal>
@@ -331,8 +351,10 @@ export default function DailyScrimTemplatesPage() {
                   <option value="fast_cup">Fast Cup</option>
                   <option value="custom">Özel</option>
                 </select>
-                <Input type="number" name="maxSlots" min={2} max={128} defaultValue={selectedTemplate.maxSlots} required />
+                <Input type="number" name="maxSlots" min={2} max={128} value={editMaxSlots} onChange={(e) => setEditMaxSlots(Number(e.target.value))} required />
               </div>
+
+              <PubgWarning value={editMaxSlots} />
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <select
@@ -366,7 +388,7 @@ export default function DailyScrimTemplatesPage() {
               <Button type="button" variant="outline" onClick={() => setEditModalOpen(false)}>
                 İptal
               </Button>
-              <SubmitButton>Güncelle</SubmitButton>
+              <SubmitButton>{isPubgRange(editMaxSlots) ? "Engellendi" : "Güncelle"}</SubmitButton>
             </ModalFooter>
           </form>
         )}

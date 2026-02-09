@@ -35,6 +35,21 @@ import {
 import type { ScrimSession } from "@/lib/db/schema";
 import { formatIstanbulDateTimeInput } from "@/lib/utils";
 
+function isPubgRange(value: number) {
+  return value >= 20 && value <= 28;
+}
+
+function PubgWarning({ value }: { value: number }) {
+  if (!isPubgRange(value)) return null;
+  return (
+    <div className="rounded-lg border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-400 backdrop-blur-sm">
+      <span className="font-bold">⚠️ Bu site PUBG scrim açmak için kullanılamaz.</span>
+      <br />
+      <span className="text-xs text-red-400/70">20-28 arası kontenjan sayısı bu platformda desteklenmemektedir.</span>
+    </div>
+  );
+}
+
 function SubmitButton({ children }: { children: React.ReactNode }) {
   const { pending } = useFormStatus();
   return (
@@ -72,6 +87,8 @@ export default function ScrimsPage() {
   const [editModalOpen, setEditModalOpen] = React.useState(false);
   const [selectedSession, setSelectedSession] = React.useState<ScrimSession | null>(null);
   const [now, setNow] = React.useState<number | null>(null);
+  const [addMaxSlots, setAddMaxSlots] = React.useState(32);
+  const [editMaxSlots, setEditMaxSlots] = React.useState(32);
   const searchParams = useSearchParams();
 
   const getEffectiveStatus = React.useCallback(
@@ -141,6 +158,7 @@ export default function ScrimsPage() {
 
   const openEditModal = (session: ScrimSession) => {
     setSelectedSession(session);
+    setEditMaxSlots(session.maxSlots);
     setEditModalOpen(true);
   };
 
@@ -310,7 +328,7 @@ export default function ScrimsPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <Input type="number" name="maxSlots" min={2} max={128} defaultValue={32} required />
+              <Input type="number" name="maxSlots" min={2} max={128} value={addMaxSlots} onChange={(e) => setAddMaxSlots(Number(e.target.value))} required />
               <select
                 name="isFastCup"
                 className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm focus:border-primary focus:outline-none"
@@ -320,6 +338,8 @@ export default function ScrimsPage() {
                 <option value="true">Fast Cup</option>
               </select>
             </div>
+
+            <PubgWarning value={addMaxSlots} />
 
             <textarea
               name="announcement"
@@ -333,7 +353,7 @@ export default function ScrimsPage() {
             <Button type="button" variant="outline" onClick={() => setAddModalOpen(false)}>
               İptal
             </Button>
-            <SubmitButton>Oluştur</SubmitButton>
+            <SubmitButton>{isPubgRange(addMaxSlots) ? "Engellendi" : "Oluştur"}</SubmitButton>
           </ModalFooter>
         </form>
       </Modal>
@@ -396,7 +416,8 @@ export default function ScrimsPage() {
                   name="maxSlots"
                   min={2}
                   max={128}
-                  defaultValue={selectedSession.maxSlots}
+                  value={editMaxSlots}
+                  onChange={(e) => setEditMaxSlots(Number(e.target.value))}
                   required
                 />
                 <select
@@ -408,6 +429,8 @@ export default function ScrimsPage() {
                   <option value="true">Fast Cup</option>
                 </select>
               </div>
+
+              <PubgWarning value={editMaxSlots} />
 
               <textarea
                 name="announcement"
@@ -422,7 +445,7 @@ export default function ScrimsPage() {
               <Button type="button" variant="outline" onClick={() => setEditModalOpen(false)}>
                 İptal
               </Button>
-              <SubmitButton>Güncelle</SubmitButton>
+              <SubmitButton>{isPubgRange(editMaxSlots) ? "Engellendi" : "Güncelle"}</SubmitButton>
             </ModalFooter>
           </form>
         )}

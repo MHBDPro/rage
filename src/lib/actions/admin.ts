@@ -80,7 +80,9 @@ const sessionSchema = z.object({
     .refine((val) => !containsProfanity(val), {
       message: "Lig etiketi uygunsuz içerik barındırıyor",
     }),
-  maxSlots: z.coerce.number().int().min(2, "Kontenjan en az 2 olmalıdır").max(128, "Kontenjan en fazla 128 olabilir"),
+  maxSlots: z.coerce.number().int().min(2, "Kontenjan en az 2 olmalıdır").max(128, "Kontenjan en fazla 128 olabilir").refine((val) => val < 20 || val > 28, {
+    message: "Bu site PUBG scrim açmak için kullanılamaz.",
+  }),
   tournamentType: z.enum(["ucl", "uel", "ukl", "fast_cup", "custom"]),
   isFastCup: z.coerce.boolean(),
   status: z.enum(["active", "closed", "completed"]),
@@ -125,7 +127,9 @@ const dailyTemplateSchema = z.object({
     .refine((val) => !containsProfanity(val), {
       message: "Lig etiketi uygunsuz içerik barındırıyor",
     }),
-  maxSlots: z.coerce.number().int().min(2, "Kontenjan en az 2 olmalıdır").max(128, "Kontenjan en fazla 128 olabilir"),
+  maxSlots: z.coerce.number().int().min(2, "Kontenjan en az 2 olmalıdır").max(128, "Kontenjan en fazla 128 olabilir").refine((val) => val < 20 || val > 28, {
+    message: "Bu site PUBG scrim açmak için kullanılamaz.",
+  }),
   tournamentType: z.enum(["ucl", "uel", "ukl", "fast_cup", "custom"]),
   isFastCup: z.coerce.boolean(),
   announcement: z
